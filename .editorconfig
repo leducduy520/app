@@ -1,0 +1,22 @@
+root = true
+
+[*]
+end_of_line = lf
+insert_final_newline = true
+
+[*.{cpp|hpp}]
+indent_style = space
+indent_size = 4
+charset = utf-8
+trim_trailing_whitespace = false
+
+[*.{yml,yaml}]
+indent_style = space
+indent_size = 2
+insert_final_newline = false
+
+[*.csv]
+insert_final_newline = false
+
+[*.clang+]
+insert_final_newline = false

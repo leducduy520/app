@@ -1,0 +1,37 @@
+project(common)
+
+cmake_path(RELATIVE_PATH CMAKE_CURRENT_LIST_DIR BASE_DIRECTORY ${CMAKE_SOURCE_DIR} OUTPUT_VARIABLE REL_PATH)
+set(HEADERS_INCLUDE_DIRS ${CMAKE_INSTALL_INCLUDEDIR}/${REL_PATH})
+
+find_package(mongocxx REQUIRED)
+link_libraries(mongo::bson_static mongo::mongocxx_static)
+
+file(GLOB SOURCE_FILES "${CMAKE_CURRENT_LIST_DIR}/*.cpp" "${CMAKE_CURRENT_LIST_DIR}/*.c")
+file(GLOB HEADER_FILES "${CMAKE_CURRENT_LIST_DIR}/*.hpp" "${CMAKE_CURRENT_LIST_DIR}/*.h")
+
+add_library(${PROJECT_NAME} STATIC ${SOURCE_FILES})
+
+target_link_libraries(${PROJECT_NAME} PUBLIC rapidcsv magic_enum nlohmann_json::nlohmann_json)
+
+target_include_directories(
+    ${PROJECT_NAME}
+    PUBLIC $<INSTALL_INTERFACE:${HEADERS_INCLUDE_DIRS}>
+           $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}>
+    )
+
+target_set_warnings(
+    TARGET ${PROJECT_NAME} ENABLE ${ENABLE_WARNINGS} AS_ERRORS ${ENABLE_WARNINGS_AS_ERRORS}
+)
+
+if(${CMAKE_CXX_COMPILER_ID} MATCHES "GNU")
+    target_compile_options(${PROJECT_NAME} PUBLIC -fPIC)
+endif(${CMAKE_CXX_COMPILER_ID} MATCHES "GNU")
+
+set_target_properties(${PROJECT_NAME} PROPERTIES PUBLIC_HEADER "${HEADER_FILES}")
+
+install(
+    TARGETS ${PROJECT_NAME} 
+        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT Development
+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT Development
+        PUBLIC_HEADER DESTINATION ${HEADERS_INCLUDE_DIRS} COMPONENT PublicHeader
+)

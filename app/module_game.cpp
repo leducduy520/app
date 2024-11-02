@@ -7,11 +7,6 @@ ModuleGame::ModuleGame()
     m_createGameFunc = (CreateGameFunc)ModuleManager::getInstance()->getModuleMethod(m_moduleName, "createGame");
 }
 
-ModuleGame::~ModuleGame()
-{
-    
-}
-
 void ModuleGame::execute()
 {
     std::string gameId;

@@ -4,7 +4,7 @@ file(GLOB SOURCE_FILES "${CMAKE_CURRENT_LIST_DIR}/*.cpp" "${CMAKE_CURRENT_LIST_D
 
 # Add source files for the executable
 add_executable(Myapp ${SOURCE_FILES})
-target_link_libraries(Myapp PRIVATE magic_enum)
+target_link_libraries(Myapp PRIVATE common)
 # Include directories
 target_include_directories(
     Myapp

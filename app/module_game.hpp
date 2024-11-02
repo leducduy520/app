@@ -10,6 +10,5 @@ class ModuleGame : public ModuleInterface
     CreateGameFunc m_createGameFunc;
 public:
     ModuleGame();
-    ~ModuleGame();
     void execute() override;
 };

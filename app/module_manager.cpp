@@ -1,5 +1,6 @@
 #include "module_manager.h"
 
+ModuleManager* ModuleManager::m_instance = nullptr;
 // Register a module with its expected path
 void ModuleManager::registerModule(const std::string& moduleName, const std::string& modulePath)
 {
@@ -33,7 +34,7 @@ bool ModuleManager::loadModule(const std::string& moduleName)
 }
 
 // Get a function pointer from a loaded module
-FunctionAddress ModuleManager::getFunction(const std::string& moduleName, const std::string& functionName)
+FunctionAddress ModuleManager::getModuleMethod(const std::string& moduleName, const std::string& functionName)
 {
     auto it = loadedModules.find(moduleName);
     if (it == loadedModules.end())
@@ -107,4 +108,15 @@ std::string ModuleManager::getModulePath(const std::string& moduleName)
     }
     return std::string(info.dli_fname);
 #endif
+}
+
+ModuleManager* ModuleManager::getInstance()
+{
+    static bool construct = false;
+    if(!construct)
+    {
+        m_instance = new ModuleManager();
+        construct = true;
+    }
+    return m_instance;
 }

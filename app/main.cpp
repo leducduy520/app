@@ -6,8 +6,12 @@
 #include <unistd.h>
 #endif
 
+#include <iostream>
+#include <memory>
+#include "game_interface.h"
+#include "module_game.hpp"
 
-#include "module_manager.h"
+using namespace std;
 
 static std::filesystem::path getExecutablePath()
 {
@@ -26,41 +30,30 @@ static std::filesystem::path getExecutablePath()
 
 int main()
 {
-    ModuleManager moduleManager;
-    std::cout << EXECUTABLE_PATH << std::endl;
-#if defined(_WIN32)
-    moduleManager.registerModule("PingPongGame", "pingpong_game.dll");
-#else
-    moduleManager.registerModule("PingPongGame", "pingpong_game.so");
-#endif
-    auto execPath = EXECUTABLE_PATH;
-    if (moduleManager.loadModule("PingPongGame"))
+    unique_ptr<ModuleInterface> mdinterface;
+    string task;
+    std::cout << "Please enter the task you want to run: ";
+    std::cin >> task;
+    
+    if (task == "game")
     {
-        // Retrieve function pointers for creating and destroying the Game object
-        // using CreateGameFunc = IGame* (*)();
-        // using DestroyGameFunc = void (*)(IGame*);
-
-        // CreateGameFunc createGame =
-        //     reinterpret_cast<CreateGameFunc>(moduleManager.getFunction("PingPongGame", "createPingPongGame"));
-        // DestroyGameFunc destroyGame =
-        //     reinterpret_cast<DestroyGameFunc>(moduleManager.getFunction("PingPongGame", "destroyGame"));
-
-        // if (createGame && destroyGame)
-        // {
-        //     // Create the Game object
-        //     IGame* game = createGame();
-        //     if (game)
-        //     {
-        //         std::string path = (getExecutablePath() / ".." / "resources" / "").string();
-        //         game->init(path);
-        //         game->run();
-        //         // Destroy the Game object
-        //         destroyGame(game);
-        //     }
-        // }
-
-        // // Release module
-        // moduleManager.releaseModule("PingPongGame");
+        try
+        {
+            mdinterface.reset(new ModuleGame());
+        }
+        catch(const std::exception& e)
+        {
+            std::cerr << e.what() << '\n';
+        }
+        catch(...)
+        {
+            std::cerr << "Unknown exception occurred\n";
+        }
     }
+    if(mdinterface)
+    {
+        mdinterface->execute();
+    }
+    std::cout << "Program finished\n";
     return 0;
 }

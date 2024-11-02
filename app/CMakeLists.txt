@@ -1,13 +1,16 @@
 project(app)
 
+file(GLOB SOURCE_FILES "${CMAKE_CURRENT_LIST_DIR}/*.cpp" "${CMAKE_CURRENT_LIST_DIR}/*.c")
+
 # Add source files for the executable
-add_executable(Myapp main.cpp module_manager.cpp)
+add_executable(Myapp ${SOURCE_FILES})
 
 # Include directories
 target_include_directories(
     Myapp
     PRIVATE
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+    $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src/games>
 )
 
 # Link the GameManager library and SFML libraries

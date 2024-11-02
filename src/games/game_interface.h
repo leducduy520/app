@@ -15,7 +15,5 @@ public:
 
 extern "C"
 {
-    EXPORT_API IGame* createGameA();
-    EXPORT_API IGame* createGameB();
-    EXPORT_API void destroyGame(IGame* game);
+    EXPORT_API IGame* createGame(const char* name);
 }

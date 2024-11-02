@@ -10,8 +10,17 @@
 #include <memory>
 #include "game_interface.h"
 #include "module_game.hpp"
+#include "magic_enum.hpp"
 
 using namespace std;
+
+enum class Task : int
+{
+    GAME = 0,
+    CALCULATOR,
+    NOTE,
+    ENGLISH
+};
 
 static std::filesystem::path getExecutablePath()
 {
@@ -34,23 +43,40 @@ int main()
     string task;
     std::cout << "Please enter the task you want to run: ";
     std::cin >> task;
-    
-    if (task == "game")
+    for (auto& c : task)
     {
-        try
+        c = toupper(c); // Convert to lowercase for case-insensitive comparison.
+    }
+    auto etask = magic_enum::enum_cast<Task>(task);
+    if (etask.has_value())
+    {
+        switch (etask.value())
         {
-            mdinterface.reset(new ModuleGame());
+        case Task::GAME:
+        {
+            try
+            {
+                mdinterface.reset(new ModuleGame());
+            }
+            catch (const std::exception& e)
+            {
+                std::cerr << e.what() << '\n';
+            }
+            catch (...)
+            {
+                std::cerr << "Unknown exception occurred\n";
+            }
         }
-        catch(const std::exception& e)
-        {
-            std::cerr << e.what() << '\n';
-        }
-        catch(...)
-        {
-            std::cerr << "Unknown exception occurred\n";
+        break;
+        default:
+            break;
         }
     }
-    if(mdinterface)
+    else
+    {
+        std::cerr << "Invalid task entered\n";
+    }
+    if (mdinterface)
     {
         mdinterface->execute();
     }

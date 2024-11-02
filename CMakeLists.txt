@@ -69,11 +69,11 @@ add_project_documentation()
 add_sanitizer_flags()
 
 if(THIS_OS_LINUX)
-set(CMAKE_INSTALL_RPATH ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR})
+    set(CMAKE_INSTALL_RPATH ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR})
 endif(THIS_OS_LINUX)
 
 list(APPEND CMAKE_PREFIX_PATH "${PREBUILD_DIR}/mongo-cxx-driver"
-"${PREBUILD_DIR}/SFML"
+"${PREBUILD_DIR}/SFML" "${PREBUILD_DIR}/games"
 )
 
 fetchlib()

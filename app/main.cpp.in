@@ -22,8 +22,7 @@ enum class ModuleName : int
 };
 
 void init()
-{ 
-	REGISTER_MODULE_LOCATION(Games, games);
+{@register_lib@
 }
 
 int main()

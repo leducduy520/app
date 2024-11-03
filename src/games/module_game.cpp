@@ -1,10 +1,16 @@
 #include "module_game.hpp"
+#include "game_factory.h"
+#include "gameA.hpp"
+#include "gameB.hpp"
 #include <exception>
 
+REGISTER_MODULE_CLASS(ModuleGame, Games)
+
 ModuleGame::ModuleGame()
-    :ModuleInterface("Games", "games")
+    :ModuleInterface("Games")
 {
-    m_createGameFunc = (CreateGameFunc)ModuleManager::getInstance()->getModuleMethod(m_moduleName, "createGame");
+    REGISTAR_GAME(gameA, A);
+    REGISTAR_GAME(gameB, B);
 }
 
 void ModuleGame::execute()
@@ -12,7 +18,7 @@ void ModuleGame::execute()
     std::string gameId;
     std::cout << "Please input a game ID: ";
     std::cin >> gameId;
-    auto* game = m_createGameFunc(gameId.c_str());
+    auto* game = GameFactory::Instance()->createGame(gameId);
     if (game)
     {
         // Implement game logic here

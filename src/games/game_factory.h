@@ -22,13 +22,12 @@ private:
 };
 
 template<class T>
-class Registrar {
+class GameRegistrar {
 public:
-    Registrar (const std::string &gameId)
+    GameRegistrar (const std::string &gameId)
     {
         GameFactory::Instance()->registerGame(gameId, [](){ return new T();});
     }
 };
 
-#define REGISTAR_GAME_DECLARE(gameclass) static Registrar<gameclass> registrar;
-#define REGISTAR_GAME_DEFINE(gameclass, gameId) Registrar<gameclass> gameclass::registrar(#gameId);
+#define REGISTAR_GAME(gameclass, gameId) GameFactory::Instance()->registerGame(#gameId, [](){ return new gameclass();});

@@ -5,6 +5,7 @@
 #include <string>
 #include <unordered_map>
 #include <memory>
+#include <functional>
 
 #ifdef _WIN32
 #include <Windows.h>
@@ -59,22 +60,10 @@ class ModuleInterface
 {
 protected:
     const std::string m_moduleName;
-    std::string m_modulePath;
 
 public:
-    ModuleInterface(const std::string& moduleName, const std::string& modulePath) : m_moduleName(moduleName), m_modulePath(modulePath)
+    ModuleInterface(const std::string& moduleName) : m_moduleName(moduleName)
     {
-#if defined(_WIN32)
-        m_modulePath.append(".dll");
-#else
-        m_modulePath.append(".so");
-#endif
-        std::cout << "Loading module " << m_modulePath << " with ID " << m_moduleName << std::endl;
-        ModuleManager::getInstance()->registerModule(m_moduleName, m_modulePath);
-        if (!ModuleManager::getInstance()->loadModule(m_moduleName))
-        {
-            throw std::bad_alloc();
-        }
     }
 
     virtual ~ModuleInterface()
@@ -84,5 +73,34 @@ public:
 
     virtual void execute() = 0;
 };
+
+class ModuleFactory
+{
+    std::unordered_map<std::string, std::function<ModuleInterface*(void)>> m_modules;
+public:
+    static ModuleFactory* Instance();
+    std::unique_ptr<ModuleInterface> CreateModule(const std::string& moduleName);
+    void RegisterModule(const std::string& moduleName, std::function<ModuleInterface*(void)> createFunc);
+};
+
+template <typename T>
+class ModuleRegistar
+{
+public:
+    ModuleRegistar(std::string moduleName)
+    {
+        ModuleFactory::Instance()->RegisterModule(moduleName, []()->ModuleInterface*{ return new T(); });
+    }
+};
+
+#if defined(_WIN32)
+#define REGISTER_MODULE_LOCATION(moduleName, modulePath) \
+    ModuleManager::getInstance()->registerModule(#moduleName,std::string(#modulePath).append(".dll"));
+#else
+#define REGISTER_MODULE_LOCATION(moduleName, modulePath) \
+    ModuleManager::getInstance()->registerModule(#moduleName,std::string(#modulePath).append(".so"));        
+#endif
+
+#define REGISTER_MODULE_CLASS(moduleclass, moduleName) ModuleRegistar<moduleclass> register##moduleclass(#moduleName);
 
 #endif // __MODULE_MANAGER_H__

@@ -120,3 +120,29 @@ ModuleManager* ModuleManager::getInstance()
     }
     return m_instance;
 }
+
+ModuleFactory *ModuleFactory::Instance()
+{
+    static ModuleFactory instance;
+    return &instance;
+}
+
+std::unique_ptr<ModuleInterface> ModuleFactory::CreateModule(const std::string& moduleName)
+{
+    ModuleManager::getInstance()->loadModule(moduleName);
+    auto it = m_modules.find(moduleName);
+    if (it != m_modules.end())
+    {
+        return std::unique_ptr<ModuleInterface>(it->second());
+    }
+    else
+    {
+        std::cerr << "Module not registered: " << moduleName << std::endl;
+        return nullptr;
+    }
+}
+
+void ModuleFactory::RegisterModule(const std::string& moduleName, std::function<ModuleInterface*(void)> createFunc)
+{
+    m_modules[moduleName] = createFunc;
+}

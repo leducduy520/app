@@ -81,7 +81,20 @@ list(APPEND CMAKE_PREFIX_PATH
     "${PREBUILD_MONGOCXX_DIR}"
 )
 
+function (REGISTER_MODULE_LIB moduleid modulepath)
+  message ("Register module library module: ${moduleid}, path: ${modulepath}")
+  get_property(module_setting GLOBAL PROPERTY LIST_REGISTER_MODULE)
+  set_property(GLOBAL PROPERTY LIST_REGISTER_MODULE "${module_setting} \n\tREGISTER_MODULE_LOCATION(${moduleid}, ${modulepath});")
+endfunction()
+
+function (WRITE_REGISTER_MODULE_LIB)
+  get_property(module_setting GLOBAL PROPERTY LIST_REGISTER_MODULE)
+  message ("LIST_REGISTER_MODULE : ${module_setting}")
+  set(register_lib "${module_setting}")
+  configure_file(${CMAKE_SOURCE_DIR}/app/main.cpp.in ${CMAKE_SOURCE_DIR}/app/main.cpp)
+endfunction()
+
 fetchlib()
 add_subdirectory(src)
 add_subdirectory(app)
-
+WRITE_REGISTER_MODULE_LIB()

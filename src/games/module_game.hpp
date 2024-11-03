@@ -3,12 +3,13 @@
 #include "module_manager.h"
 #include <string>
 
-using CreateGameFunc = IGame* (*)(const char*);
-
 class ModuleGame : public ModuleInterface
 {
-    CreateGameFunc m_createGameFunc;
 public:
-    ModuleGame();
+    using CreateGameFunc = IGame* (*)(const char*);
+private:
+    // CreateGameFunc m_createGameFunc;
+public:
+    EXPORT_API ModuleGame();
     void execute() override;
 };

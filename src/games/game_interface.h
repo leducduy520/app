@@ -1,7 +1,10 @@
 #pragma once
 
+#include <iostream>
+
 class IGame
 {
+    
 public:
     virtual void run() = 0;
     virtual ~IGame() = default;

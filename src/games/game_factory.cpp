@@ -12,7 +12,7 @@ IGame* GameFactory::createGame(const std::string &gameId)
 
 void GameFactory::registerGame(const std::string &gameId, CreateGameFunc createfunc)
 {
-    m_games.emplace(gameId, createfunc);
+    m_games.emplace(gameId, std::move(createfunc));
 }
 GameFactory* GameFactory::Instance()
 {

@@ -1,9 +1,7 @@
 #include "gameA.hpp"
-#include "game_factory.h"
 #include "mongo_db_client.hpp"
-#include <iostream>
 
-REGISTER_GAME(gameA, "A");
+REGISTAR_GAME_DEFINE(gameA, A);
 
 gameA::gameA()
 {

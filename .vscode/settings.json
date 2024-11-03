@@ -154,5 +154,8 @@
     },
     "editor.defaultFormatter": "cheshirekow.cmake-format",
     "editor.formatOnSave": true
-  }
+  },
+  "C_Cpp.codeAnalysis.clangTidy.checks.disabled": [
+    "cppcoreguidelines-owning-memory"
+  ]
 }

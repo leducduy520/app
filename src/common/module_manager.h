@@ -101,6 +101,6 @@ public:
     ModuleManager::getInstance()->registerModule(#moduleName,std::string(#modulePath).append(".so"));        
 #endif
 
-#define REGISTER_MODULE_CLASS(moduleclass, moduleName) ModuleRegistar<moduleclass> register##moduleclass(#moduleName);
+#define REGISTER_MODULE_CLASS(moduleclass, moduleName) const ModuleRegistar<moduleclass> register##moduleclass(#moduleName);
 
 #endif // __MODULE_MANAGER_H__

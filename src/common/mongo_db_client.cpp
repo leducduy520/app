@@ -1,7 +1,7 @@
 #include "mongo_db_client.hpp"
 #include <cstdlib>
 
-DBClient* DBClient::m_instance;
+std::unique_ptr<DBClient> DBClient::m_instance;
 std::once_flag DBClient::m_flag;
 
 bsoncxx::stdx::optional<string> get_database_uri()
@@ -51,17 +51,8 @@ DBClient::DBClient()
 
 DBClient* DBClient::GetInstance()
 {
-    std::call_once(m_flag, []() { m_instance = new DBClient(); });
-    return m_instance;
-}
-
-void DBClient::DestroyInstance()
-{
-    if (m_instance != nullptr)
-    {
-        delete m_instance;
-        m_instance = nullptr;
-    }
+    std::call_once(m_flag, []() { m_instance = std::make_unique<DBClient>(); });
+    return m_instance.get();
 }
 
 const mongocxx::database* DBClient::GetDatabase(const char* name)

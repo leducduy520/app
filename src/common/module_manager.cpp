@@ -129,17 +129,16 @@ ModuleFactory *ModuleFactory::Instance()
 
 std::unique_ptr<ModuleInterface> ModuleFactory::CreateModule(const std::string& moduleName)
 {
-    ModuleManager::getInstance()->loadModule(moduleName);
-    auto it = m_modules.find(moduleName);
-    if (it != m_modules.end())
+    if (ModuleManager::getInstance()->loadModule(moduleName))
     {
-        return std::unique_ptr<ModuleInterface>(it->second());
+        auto fit = m_modules.find(moduleName);
+        if (fit != m_modules.end())
+        {
+            return std::unique_ptr<ModuleInterface>(fit->second());
+        }
+        std::cerr << "Module not registered: " << moduleName << '\n';
     }
-    else
-    {
-        std::cerr << "Module not registered: " << moduleName << std::endl;
-        return nullptr;
-    }
+    return nullptr;
 }
 
 void ModuleFactory::RegisterModule(const std::string& moduleName, std::function<ModuleInterface*(void)> createFunc)

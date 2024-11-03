@@ -7,6 +7,7 @@
 #include <queue>
 #include <thread>
 #include <vector>
+#include <memory>
 
 class ThreadPool
 {
@@ -21,17 +22,7 @@ public:
     // Stop the pool from accepting new tasks and wait for current tasks to finish
     void shutdown();
 
-    static ThreadPool* getInstance()
-    {
-        std::call_once(creat_flag, []() { pool = new ThreadPool(); });
-        return pool;
-    }
-
-    static void destroyInstance()
-    {
-        delete pool;
-        pool = nullptr;
-    }
+    static ThreadPool* getInstance();
 
 private:
     // Worker thread function
@@ -60,7 +51,7 @@ private:
     std::atomic<bool> stop_flag;
     std::atomic<int> idle_threads;
 
-    static ThreadPool* pool;
+    static std::unique_ptr<ThreadPool> pool;
     static std::once_flag creat_flag;
 };
 

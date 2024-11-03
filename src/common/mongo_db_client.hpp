@@ -9,6 +9,7 @@
 #include <mongocxx/instance.hpp>
 #include <mutex>
 #include <string>
+#include <memory>
 
 using bsoncxx::builder::basic::kvp;
 using bsoncxx::builder::basic::make_array;
@@ -29,11 +30,11 @@ class DBClient
     mongocxx::instance m_dbinstance;
     mongocxx::database m_dbdatabase;
     mongocxx::collection m_dbcollection;
-    static DBClient* m_instance;
+    static std::unique_ptr<DBClient> m_instance;
     static std::once_flag m_flag;
-    DBClient();
 
 public:
+    DBClient();
     static DBClient* GetInstance();
     static void DestroyInstance();
     const mongocxx::database* GetDatabase(const char* name);

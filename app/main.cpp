@@ -8,12 +8,13 @@
 
 #include <iostream>
 #include <memory>
+#include <cstdint>
 #include "module_manager.h"
 #include "magic_enum.hpp"
 
 using namespace std;
 
-enum class ModuleName : int
+enum class ModuleName : uint8_t
 {
     GAMES = 0,
     CALCULATOR,
@@ -31,44 +32,55 @@ int main()
     init();
     unique_ptr<ModuleInterface> mdinterface;
     string task;
-    std::cout << "Please enter the task you want to run: ";
-    std::cin >> task;
-    for (auto& cha : task)
+    while(true)
     {
-        cha = toupper(cha); // Convert to lowercase for case-insensitive comparison.
-    }
-    auto etask = magic_enum::enum_cast<ModuleName>(task);
-    if (etask.has_value())
-    {
-        switch (etask.value())
+        std::cout.flush();
+        std::cout.seekp(0);
+        std::cout << "Please enter the task you want to run: ";
+        std::cin >> task;
+        for (auto& cha : task)
         {
-        case ModuleName::GAMES:
+            cha = (char)toupper(cha); // Convert to lowercase for case-insensitive comparison.
+        }
+        auto etask = magic_enum::enum_cast<ModuleName>(task);
+        if (etask.has_value())
         {
-            try
+            switch (etask.value())
             {
-                mdinterface = ModuleFactory::Instance()->CreateModule("Games");
+            case ModuleName::GAMES:
+            {
+                try
+                {
+                    mdinterface = ModuleFactory::Instance()->CreateModule("Games");
+                }
+                catch (const std::exception& e)
+                {
+                    std::cerr << e.what() << '\n';
+                }
+                catch (...)
+                {
+                    std::cerr << "Unknown exception occurred\n";
+                }
             }
-            catch (const std::exception& e)
-            {
-                std::cerr << e.what() << '\n';
-            }
-            catch (...)
-            {
-                std::cerr << "Unknown exception occurred\n";
+            break;
+            default:
+                break;
             }
         }
-        break;
-        default:
+        else if (task == "QUIT")
+        {
+            std::cout << "Quit\n";
             break;
         }
-    }
-    else
-    {
-        std::cerr << "Invalid task entered\n";
-    }
-    if (mdinterface)
-    {
-        mdinterface->execute();
+        else
+        {
+            std::cerr << "Invalid task entered\n";
+            break;
+        }
+        if (mdinterface)
+        {
+            mdinterface->execute();
+        }
     }
     std::cout << "Program finished\n";
     return 0;

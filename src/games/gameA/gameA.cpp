@@ -1,13 +1,14 @@
 #include "gameA.hpp"
-#include "mongo_db_client.hpp"
+#include "thread_pool.hpp"
 
 gameA::gameA()
 {
     cout << "gameA default constructor\n";
-    DBClient::GetInstance();
 }
 
 void gameA::run()
 {
-    cout << "gameA is running\n";
+    cout << "gameA is running...\n";
+    std::this_thread::sleep_for(std::chrono::milliseconds(3000));
+    cout << "gameA has finished running\n";
 }

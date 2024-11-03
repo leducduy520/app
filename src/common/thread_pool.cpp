@@ -1,6 +1,6 @@
 #include "thread_pool.hpp"
 
-ThreadPool* ThreadPool::pool;
+std::unique_ptr<ThreadPool> ThreadPool::pool;
 std::once_flag ThreadPool::creat_flag;
 
 ThreadPool::ThreadPool(size_t threads) : stop_flag(false), idle_threads(threads)
@@ -19,7 +19,7 @@ ThreadPool::~ThreadPool()
 void ThreadPool::shutdown()
 {
     {
-        std::unique_lock<std::mutex> lock(queue_mutex);
+        const std::unique_lock<std::mutex> lock(queue_mutex);
         stop_flag.store(true);
     }
     condition.notify_all();
@@ -40,9 +40,9 @@ void ThreadPool::worker()
             condition.wait(lock, [this] { return stop_flag || !tasks.empty(); });
 
             if (stop_flag && tasks.empty())
-                return;
+                {return;}
 
-            task = std::move(tasks.top());
+            task = tasks.top();
             tasks.pop();
         }
 
@@ -53,8 +53,15 @@ void ThreadPool::worker()
         }
         catch (const std::exception& e)
         {
-            std::cerr << "Exception in thread pool task: " << e.what() << std::endl;
+            std::cerr << "Exception in thread pool task: " << e.what() << '\n';
         }
         idle_threads++;
     }
 }
+
+ThreadPool* ThreadPool::getInstance()
+{
+    std::call_once(creat_flag, []() { pool = std::make_unique<ThreadPool>(); });
+    return pool.get();
+}
+

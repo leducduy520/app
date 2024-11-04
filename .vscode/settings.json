@@ -171,6 +171,7 @@
     "editor.formatOnSave": true
   },
   "C_Cpp.codeAnalysis.clangTidy.checks.disabled": [
-    "cppcoreguidelines-owning-memory"
+    "cppcoreguidelines-owning-memory",
+    "readability-isolate-declaration"
   ]
 }

@@ -34,9 +34,9 @@ protected:
     const std::string m_moduleName;
 
 public:
-    ModuleInterface(const std::string& moduleName);
+    ModuleInterface(std::string moduleName);
 
-    virtual ~ModuleInterface();
+    virtual ~ModuleInterface() = default;
 
     virtual void execute() = 0;
 };
@@ -44,7 +44,6 @@ public:
 class ModuleFactory
 {
     std::unordered_map<std::string, std::function<ModuleInterface*(void)>> m_modules;
-    ~ModuleFactory();
 
 public:
     static ModuleFactory* Instance();

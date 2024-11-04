@@ -6,34 +6,28 @@ using namespace std;
 REGISTER_MODULE_CLASS(Calculator, Calculator)
 
 Calculator::Calculator() : ModuleInterface("Calculator")
-{
-    cout << "Calculator constructor\n";
-}
+{}
 
 Calculator::~Calculator()
-{
-    cout << "Calculator destructor\n";
-}
+{}
 
 void Calculator::execute()
 {
-
-    double num1, num2;
-    char operation;
-    bool finished = false;
     while (true)
     {
+        double num1{}, num2{};
+        char operation{};
         cout << "Enter two numbers and an operator (+, -, *, /): ";
-        cin >> num1;
+        cin >> num1 >> operation >> num2;
         if (cin.fail())
         {
-            cout << "Invalid input for the first number!" << endl;
+            cout << "Invalid expresion!\n";
             cin.clear();
             cin.ignore(numeric_limits<streamsize>::max(), '\n');
             break;
         }
 
-        double result;
+        double result{};
         switch (operation)
         {
         case '+':

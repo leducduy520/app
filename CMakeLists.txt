@@ -38,6 +38,7 @@ set(PREBUILD_DIR "${CMAKE_SOURCE_DIR}/prebuild")
 set(PREBUILD_GAMES_DIR "${PREBUILD_DIR}/games")
 set(PREBUILD_MONGOCXX_DIR "${PREBUILD_DIR}/mongo-cxx-driver")
 set(PREBUILD_SFML_DIR "${PREBUILD_DIR}/SFML")
+set(PRE_DEFINITION_PATH ${CMAKE_SOURCE_DIR}/app/pre-definition.hpp)
 
 # Set output directory for each configuration
 get_property(THIS_MULTI_CONFIG GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
@@ -47,13 +48,13 @@ if(THIS_MULTI_CONFIG)
         string(TOUPPER ${build_type} build_type_upper)
         set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_${build_type_upper}
             ${CMAKE_BINARY_DIR}/${build_type}/lib
-        )
+            )
         set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_${build_type_upper}
             ${CMAKE_BINARY_DIR}/${build_type}/lib
-        )
+            )
         set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_${build_type_upper}
             ${CMAKE_BINARY_DIR}/${build_type}/bin
-        )
+            )
     endforeach()
 endif()
 
@@ -75,26 +76,39 @@ if(THIS_OS_LINUX)
     set(CMAKE_INSTALL_RPATH ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR})
 endif(THIS_OS_LINUX)
 
-list(APPEND CMAKE_PREFIX_PATH 
-    "${PREBUILD_GAMES_DIR}"
-    "${PREBUILD_SFML_DIR}" 
-    "${PREBUILD_MONGOCXX_DIR}"
-)
+list(APPEND CMAKE_PREFIX_PATH "${PREBUILD_GAMES_DIR}" "${PREBUILD_SFML_DIR}"
+     "${PREBUILD_MONGOCXX_DIR}"
+     )
 
-function (REGISTER_MODULE_LIB moduleid modulepath)
-  message ("Register module library module: ${moduleid}, path: ${modulepath}")
-  get_property(module_setting GLOBAL PROPERTY LIST_REGISTER_MODULE)
-  set_property(GLOBAL PROPERTY LIST_REGISTER_MODULE "${module_setting} \n\tREGISTER_MODULE_LOCATION(${moduleid}, ${modulepath});")
+function(REGISTER_MODULE_LIB moduleid modulepath)
+    message("Register module library module: ${moduleid}, path: ${modulepath}")
+    get_property(module_setting GLOBAL PROPERTY LIST_REGISTER_MODULE)
+    set_property(
+        GLOBAL
+        PROPERTY LIST_REGISTER_MODULE
+                 "${module_setting} \n\tREGISTER_MODULE_LOCATION(${moduleid}, ${modulepath});"
+        )
+
+    string(TOUPPER "${moduleid}" moduleid_upper)
+    get_property(module_enum GLOBAL PROPERTY LIST_REGISTER_MODULE_ENUM)
+    if(module_enum)
+        string(PREPEND moduleid_upper ",\n\t")
+    else()
+        string(PREPEND moduleid_upper "\t")
+    endif()
+    set_property(GLOBAL PROPERTY LIST_REGISTER_MODULE_ENUM "${module_enum} ${moduleid_upper}")
 endfunction()
 
-function (WRITE_REGISTER_MODULE_LIB)
-  get_property(module_setting GLOBAL PROPERTY LIST_REGISTER_MODULE)
-  message ("LIST_REGISTER_MODULE : ${module_setting}")
-  set(register_lib "${module_setting}")
-  configure_file(${CMAKE_SOURCE_DIR}/app/main.cpp.in ${CMAKE_SOURCE_DIR}/app/main.cpp)
+function(WRITE_REGISTER_MODULE_LIB)
+    get_property(module_setting GLOBAL PROPERTY LIST_REGISTER_MODULE)
+    get_property(module_enum GLOBAL PROPERTY LIST_REGISTER_MODULE_ENUM)
+    message("LIST_REGISTER_MODULE : ${module_setting}")
+    set(register_lib "${module_setting}")
+    set(register_enum "${module_enum}")
+    configure_file(${PRE_DEFINITION_PATH}.in ${PRE_DEFINITION_PATH})
 endfunction()
 
 fetchlib()
 add_subdirectory(src)
 add_subdirectory(app)
-WRITE_REGISTER_MODULE_LIB()
+write_register_module_lib()

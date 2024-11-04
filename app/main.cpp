@@ -1,44 +1,17 @@
-#include <filesystem>
-#ifdef _WIN32
-#include <Windows.h>
-#else
-#include <linux/limits.h>
-#include <unistd.h>
-#endif
-
-#include <iostream>
-#include <memory>
-#include <cstdint>
-#include "module_manager.h"
-#include "magic_enum.hpp"
-
-using namespace std;
-
-enum class ModuleName : uint8_t
-{
-    GAMES = 0,
-    CALCULATOR,
-    NOTE,
-    ENGLISH
-};
-
-void init()
-{ 
-	REGISTER_MODULE_LOCATION(Games, games);
-}
+#include "pre-definition.hpp"
 
 int main()
 {
     init();
-    unique_ptr<ModuleInterface> mdinterface;
-    string task;
+    std::unique_ptr<ModuleInterface> mdinterface;
+    std::string task;
     while(true)
     {
         std::cout << "Please enter the task you want to run: ";
         std::cin >> task;
         for (auto& cha : task)
         {
-            cha = (char)toupper(cha); // Convert to lowercase for case-insensitive comparison.
+            cha = static_cast<char>(toupper(cha));
         }
         auto etask = magic_enum::enum_cast<ModuleName>(task);
         if (etask.has_value())

@@ -8,7 +8,7 @@ gameA::gameA()
 
 void gameA::run()
 {
-    cout << "gameA is running...\n";
+    cout << "\ngameA is running...\n";
     std::this_thread::sleep_for(std::chrono::milliseconds(3000));
     cout << "gameA has finished running\n";
 }

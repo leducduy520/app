@@ -3,4 +3,4 @@
 build
 prebuild
 install
-app/main.cpp
+app/pre-definition.hpp

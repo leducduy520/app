@@ -37,6 +37,7 @@ set_target_properties(
     ${PROJECT_NAME} PROPERTIES PUBLIC_HEADER "game_interface.h" WINDOWS_EXPORT_ALL_SYMBOLS ON PREFIX
                                                                                               ""
     )
+target_compile_options(${PROJECT_NAME} PUBLIC -fPIC)
 install(
     TARGETS ${PROJECT_NAME} RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT Runtime
     PUBLIC_HEADER DESTINATION ${HEADERS_INCLUDE_DIRS} COMPONENT PublicHeader

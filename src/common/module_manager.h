@@ -6,6 +6,7 @@
 #include <unordered_map>
 #include <memory>
 #include <functional>
+#include <mutex>
 
 #ifdef _WIN32
 #include <Windows.h>
@@ -24,6 +25,32 @@ typedef void* FunctionAddress;
 #define GetFunctionAddress dlsym
 #define UnloadLibrary dlclose
 #endif
+
+class ModuleFactory;
+
+class ModuleInterface
+{
+protected:
+    const std::string m_moduleName;
+
+public:
+    ModuleInterface(const std::string& moduleName);
+
+    virtual ~ModuleInterface();
+
+    virtual void execute() = 0;
+};
+
+class ModuleFactory
+{
+    std::unordered_map<std::string, std::function<ModuleInterface*(void)>> m_modules;
+    ~ModuleFactory();
+
+public:
+    static ModuleFactory* Instance();
+    ModuleInterface* CreateModule(const std::string& moduleName);
+    void RegisterModule(const std::string& moduleName, std::function<ModuleInterface*(void)> createFunc);
+};
 
 class ModuleManager
 {
@@ -44,43 +71,21 @@ public:
     // Get the actual path of a loaded module
     std::string getModulePath(const std::string& moduleName);
 
+    ModuleInterface* getInterface(const std::string& moduleName);
+
     static ModuleManager* getInstance();
 
     // Destructor to ensure all modules are released
     ~ModuleManager();
+    ModuleManager() = default;
 
 private:
-    ModuleManager() = default;
-    static ModuleManager* m_instance;
+    friend class ModuleFactory;
+    static std::unique_ptr<ModuleManager> m_instance;
+    static std::once_flag m_flag;
     std::unordered_map<std::string, std::string> modulePaths;
     std::unordered_map<std::string, LibraryHandle> loadedModules;
-};
-
-class ModuleInterface
-{
-protected:
-    const std::string m_moduleName;
-
-public:
-    ModuleInterface(const std::string& moduleName) : m_moduleName(moduleName)
-    {}
-
-    virtual ~ModuleInterface()
-    {
-        ModuleManager::getInstance()->releaseModule(m_moduleName);
-    }
-
-    virtual void execute() = 0;
-};
-
-class ModuleFactory
-{
-    std::unordered_map<std::string, std::function<ModuleInterface*(void)>> m_modules;
-
-public:
-    static ModuleFactory* Instance();
-    std::unique_ptr<ModuleInterface> CreateModule(const std::string& moduleName);
-    void RegisterModule(const std::string& moduleName, std::function<ModuleInterface*(void)> createFunc);
+    std::unordered_map<std::string, std::unique_ptr<ModuleInterface>> loadedIModules;
 };
 
 template <typename T>

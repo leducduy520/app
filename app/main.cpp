@@ -3,10 +3,10 @@
 int main()
 {
     init();
-    std::unique_ptr<ModuleInterface> mdinterface;
     std::string task;
     while (true)
     {
+        ModuleInterface* mdinterface = nullptr;
         std::cout << "Please enter the task you want to run: ";
         std::cin >> task;
         for (auto& cha : task)
@@ -20,17 +20,17 @@ int main()
             {
             case ModuleName::GAMES:
             {
-                try
+                if (ModuleManager::getInstance()->loadModule("Games"))
                 {
-                    mdinterface = ModuleFactory::Instance()->CreateModule("Games");
+                    mdinterface = ModuleManager::getInstance()->getInterface("Games");
                 }
-                catch (const std::exception& e)
+            }
+            break;
+            case ModuleName::CALCULATOR:
+            {
+                if (ModuleManager::getInstance()->loadModule("Calculator"))
                 {
-                    std::cerr << e.what() << '\n';
-                }
-                catch (...)
-                {
-                    std::cerr << "Unknown exception occurred\n";
+                    mdinterface = ModuleManager::getInstance()->getInterface("Calculator");
                 }
             }
             break;
@@ -48,7 +48,7 @@ int main()
             std::cerr << "Invalid task entered\n";
             break;
         }
-        if (mdinterface)
+        if (mdinterface != nullptr)
         {
             mdinterface->execute();
         }

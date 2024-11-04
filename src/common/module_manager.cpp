@@ -1,6 +1,7 @@
 #include "module_manager.h"
 
-ModuleManager* ModuleManager::m_instance = nullptr;
+std::unique_ptr<ModuleManager> ModuleManager::m_instance = nullptr;
+std::once_flag ModuleManager::m_flag;
 
 // Register a module with its expected path
 void ModuleManager::registerModule(const std::string& moduleName, const std::string& modulePath)
@@ -18,19 +19,32 @@ bool ModuleManager::loadModule(const std::string& moduleName)
         return false;
     }
 
-    LibraryHandle hModule = LoadLibraryFunction(it->second.c_str());
-    if (hModule == nullptr)
+    LibraryHandle hModule{};
+    ModuleInterface* hModuleInterface{};
+    auto hModuleit = loadedModules.find(moduleName);
+    if (hModuleit == loadedModules.end())
+    {
+        hModule = LoadLibraryFunction(it->second.c_str());
+        hModuleInterface = ModuleFactory::Instance()->CreateModule(moduleName);
+    }
+    else
+    {
+        std::cout << "Loaded module: " << it->second << '\n';
+        return true;
+    }
+    if (hModule == nullptr || hModuleInterface == nullptr)
     {
 #ifdef _WIN32
-        std::cerr << "Failed to load module: " << moduleName << " Error: " << GetLastError() << std::endl;
+        std::cerr << "Failed to load module: " << moduleName << " Error: " << GetLastError() << '\n';
 #else
-        std::cerr << "Failed to load module: " << moduleName << " Error: " << dlerror() << std::endl;
+        std::cerr << "Failed to load module: " << moduleName << " Error: " << dlerror() << '\n';
 #endif
         return false;
     }
 
     loadedModules[moduleName] = hModule;
-    std::cout << "Loaded module: " << it->second << std::endl;
+    loadedIModules[moduleName].reset(hModuleInterface);
+    std::cout << "Loaded module: " << it->second << '\n';
     return true;
 }
 
@@ -40,14 +54,14 @@ FunctionAddress ModuleManager::getModuleMethod(const std::string& moduleName, co
     auto it = loadedModules.find(moduleName);
     if (it == loadedModules.end())
     {
-        std::cerr << "Module not loaded: " << moduleName << std::endl;
+        std::cerr << "Module not loaded: " << moduleName << '\n';
         return nullptr;
     }
 
     FunctionAddress func = GetFunctionAddress(it->second, functionName.c_str());
     if (func == nullptr)
     {
-        std::cerr << "Failed to get function: " << functionName << " from module: " << moduleName << std::endl;
+        std::cerr << "Failed to get function: " << functionName << " from module: " << moduleName << '\n';
     }
 
     return func;
@@ -59,23 +73,25 @@ void ModuleManager::releaseModule(const std::string& moduleName)
     auto it = loadedModules.find(moduleName);
     if (it != loadedModules.end())
     {
-        UnloadLibrary(it->second);
-        std::cout << "Released module: " << modulePaths[moduleName] << std::endl;
         loadedModules.erase(it);
+        UnloadLibrary(it->second);
+        std::cout << "Released module: " << modulePaths[moduleName] << '\n';
+        loadedIModules.erase(moduleName);
     }
     else
     {
-        std::cerr << "Module not loaded: " << moduleName << std::endl;
+        std::cerr << "Module not loaded: " << moduleName << '\n';
     }
 }
 
 // Destructor to ensure all modules are released
 ModuleManager::~ModuleManager()
 {
+    loadedIModules.clear();
     for (const auto& pair : loadedModules)
     {
         UnloadLibrary(pair.second);
-        std::cout << "Released module in destructor: " << modulePaths[pair.first] << std::endl;
+        std::cout << "Released module in destructor: " << modulePaths[pair.first] << '\n';
     }
     loadedModules.clear();
 }
@@ -86,7 +102,7 @@ std::string ModuleManager::getModulePath(const std::string& moduleName)
     auto it = loadedModules.find(moduleName);
     if (it == loadedModules.end())
     {
-        std::cerr << "Module not loaded: " << moduleName << std::endl;
+        std::cerr << "Module not loaded: " << moduleName << '\n';
         return "";
     }
 
@@ -96,7 +112,7 @@ std::string ModuleManager::getModulePath(const std::string& moduleName)
     char path[MAX_PATH];
     if (GetModuleFileName(hModule, path, MAX_PATH) == 0)
     {
-        std::cerr << "Failed to get module path. Error: " << GetLastError() << std::endl;
+        std::cerr << "Failed to get module path. Error: " << GetLastError() << '\n';
         return "";
     }
     return std::string(path);
@@ -104,22 +120,40 @@ std::string ModuleManager::getModulePath(const std::string& moduleName)
     Dl_info info;
     if (dladdr(hModule, &info) == 0)
     {
-        std::cerr << "Failed to get module path. Error: " << dlerror() << std::endl;
+        std::cerr << "Failed to get module path. Error: " << dlerror() << '\n';
         return "";
     }
     return std::string(info.dli_fname);
 #endif
 }
 
+ModuleInterface* ModuleManager::getInterface(const std::string& moduleName)
+{
+    auto mit = loadedIModules.find(moduleName);
+    if (mit == loadedIModules.end())
+    {
+        return nullptr;
+    }
+    return mit->second.get();
+}
+
 ModuleManager* ModuleManager::getInstance()
 {
-    static bool construct = false;
-    if (!construct)
-    {
-        m_instance = new ModuleManager();
-        construct = true;
-    }
-    return m_instance;
+    std::call_once(m_flag, []() { m_instance = std::make_unique<ModuleManager>(); });
+    return m_instance.get();
+}
+
+ModuleInterface::ModuleInterface(const std::string& modulename) : m_moduleName(modulename)
+{}
+
+ModuleInterface::~ModuleInterface()
+{
+    std::cout << "ModuleInterface destructor: " << m_moduleName << '\n';
+}
+
+ModuleFactory::~ModuleFactory()
+{
+    std::cout << "ModuleFactory destructor\n";
 }
 
 ModuleFactory* ModuleFactory::Instance()
@@ -128,17 +162,14 @@ ModuleFactory* ModuleFactory::Instance()
     return &instance;
 }
 
-std::unique_ptr<ModuleInterface> ModuleFactory::CreateModule(const std::string& moduleName)
+ModuleInterface* ModuleFactory::CreateModule(const std::string& moduleName)
 {
-    if (ModuleManager::getInstance()->loadModule(moduleName))
+    auto fit = m_modules.find(moduleName);
+    if (fit != m_modules.end())
     {
-        auto fit = m_modules.find(moduleName);
-        if (fit != m_modules.end())
-        {
-            return std::unique_ptr<ModuleInterface>(fit->second());
-        }
-        std::cerr << "Module not registered: " << moduleName << '\n';
+        return fit->second();
     }
+    std::cerr << "Module not registered: " << moduleName << '\n';
     return nullptr;
 }
 

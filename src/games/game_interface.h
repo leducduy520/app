@@ -4,7 +4,7 @@
 
 class IGame
 {
-    
+
 public:
     virtual void run() = 0;
     virtual ~IGame() = default;

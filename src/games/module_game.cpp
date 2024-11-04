@@ -7,8 +7,7 @@
 
 REGISTER_MODULE_CLASS(ModuleGame, Games)
 
-ModuleGame::ModuleGame()
-    :ModuleInterface("Games")
+ModuleGame::ModuleGame() : ModuleInterface("Games")
 {
     REGISTAR_GAME(gameA, A);
     REGISTAR_GAME(gameB, B);
@@ -24,7 +23,10 @@ void ModuleGame::execute()
     if (game != nullptr)
     {
         std::cout << "Game created: " << gameId << '\n';
-        ThreadPool::getInstance()->submit(100, [game](){ game->run(); delete game; });
+        ThreadPool::getInstance()->submit(100, [game]() {
+            game->run();
+            delete game;
+        });
         std::cout << "Game run: " << gameId << '\n';
     }
     else

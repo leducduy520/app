@@ -63,8 +63,7 @@ protected:
 
 public:
     ModuleInterface(const std::string& moduleName) : m_moduleName(moduleName)
-    {
-    }
+    {}
 
     virtual ~ModuleInterface()
     {
@@ -77,6 +76,7 @@ public:
 class ModuleFactory
 {
     std::unordered_map<std::string, std::function<ModuleInterface*(void)>> m_modules;
+
 public:
     static ModuleFactory* Instance();
     std::unique_ptr<ModuleInterface> CreateModule(const std::string& moduleName);
@@ -89,18 +89,19 @@ class ModuleRegistar
 public:
     ModuleRegistar(std::string moduleName)
     {
-        ModuleFactory::Instance()->RegisterModule(moduleName, []()->ModuleInterface*{ return new T(); });
+        ModuleFactory::Instance()->RegisterModule(moduleName, []() -> ModuleInterface* { return new T(); });
     }
 };
 
 #if defined(_WIN32)
-#define REGISTER_MODULE_LOCATION(moduleName, modulePath) \
-    ModuleManager::getInstance()->registerModule(#moduleName,std::string(#modulePath).append(".dll"));
+#define REGISTER_MODULE_LOCATION(moduleName, modulePath)                                                               \
+    ModuleManager::getInstance()->registerModule(#moduleName, std::string(#modulePath).append(".dll"));
 #else
-#define REGISTER_MODULE_LOCATION(moduleName, modulePath) \
-    ModuleManager::getInstance()->registerModule(#moduleName,std::string(#modulePath).append(".so"));        
+#define REGISTER_MODULE_LOCATION(moduleName, modulePath)                                                               \
+    ModuleManager::getInstance()->registerModule(#moduleName, std::string(#modulePath).append(".so"));
 #endif
 
-#define REGISTER_MODULE_CLASS(moduleclass, moduleName) const ModuleRegistar<moduleclass> register##moduleclass(#moduleName);
+#define REGISTER_MODULE_CLASS(moduleclass, moduleName)                                                                 \
+    const ModuleRegistar<moduleclass> register##moduleclass(#moduleName);
 
 #endif // __MODULE_MANAGER_H__

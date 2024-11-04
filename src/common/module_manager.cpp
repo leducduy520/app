@@ -1,6 +1,7 @@
 #include "module_manager.h"
 
 ModuleManager* ModuleManager::m_instance = nullptr;
+
 // Register a module with its expected path
 void ModuleManager::registerModule(const std::string& moduleName, const std::string& modulePath)
 {
@@ -113,7 +114,7 @@ std::string ModuleManager::getModulePath(const std::string& moduleName)
 ModuleManager* ModuleManager::getInstance()
 {
     static bool construct = false;
-    if(!construct)
+    if (!construct)
     {
         m_instance = new ModuleManager();
         construct = true;
@@ -121,7 +122,7 @@ ModuleManager* ModuleManager::getInstance()
     return m_instance;
 }
 
-ModuleFactory *ModuleFactory::Instance()
+ModuleFactory* ModuleFactory::Instance()
 {
     static ModuleFactory instance;
     return &instance;

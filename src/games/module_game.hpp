@@ -7,6 +7,7 @@ class ModuleGame : public ModuleInterface
 {
 public:
     using CreateGameFunc = IGame* (*)(const char*);
+
 private:
     // CreateGameFunc m_createGameFunc;
 public:

@@ -1,5 +1,6 @@
 #include "gameB.hpp"
 #include "thread_pool.hpp"
+
 gameB::gameB()
 {
     cout << "gameB default constructor\n";

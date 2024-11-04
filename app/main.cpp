@@ -5,7 +5,7 @@ int main()
     init();
     std::unique_ptr<ModuleInterface> mdinterface;
     std::string task;
-    while(true)
+    while (true)
     {
         std::cout << "Please enter the task you want to run: ";
         std::cin >> task;

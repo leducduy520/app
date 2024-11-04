@@ -9,25 +9,28 @@ class GameFactory;
 
 using namespace std;
 
-
-class GameFactory{
+class GameFactory
+{
 
 public:
     using CreateGameFunc = function<IGame*(void)>;
-    IGame* createGame(const std::string &gameId);
-    void registerGame(const std::string &, CreateGameFunc createfunc);
+    IGame* createGame(const std::string& gameId);
+    void registerGame(const std::string&, CreateGameFunc createfunc);
     static GameFactory* Instance();
+
 private:
     unordered_map<string, CreateGameFunc> m_games;
 };
 
-template<class T>
-class GameRegistrar {
+template <class T>
+class GameRegistrar
+{
 public:
-    GameRegistrar (const std::string &gameId)
+    GameRegistrar(const std::string& gameId)
     {
-        GameFactory::Instance()->registerGame(gameId, [](){ return new T();});
+        GameFactory::Instance()->registerGame(gameId, []() { return new T(); });
     }
 };
 
-#define REGISTAR_GAME(gameclass, gameId) GameFactory::Instance()->registerGame(#gameId, [](){ return new gameclass();});
+#define REGISTAR_GAME(gameclass, gameId)                                                                               \
+    GameFactory::Instance()->registerGame(#gameId, []() { return new gameclass(); });

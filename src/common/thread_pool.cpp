@@ -40,7 +40,9 @@ void ThreadPool::worker()
             condition.wait(lock, [this] { return stop_flag || !tasks.empty(); });
 
             if (stop_flag && tasks.empty())
-                {return;}
+            {
+                return;
+            }
 
             task = tasks.top();
             tasks.pop();
@@ -64,4 +66,3 @@ ThreadPool* ThreadPool::getInstance()
     std::call_once(creat_flag, []() { pool = std::make_unique<ThreadPool>(); });
     return pool.get();
 }
-

@@ -5,7 +5,6 @@ class Calculator : public ModuleInterface
 {
 public:
     Calculator();
-    ~Calculator();
     void execute() override;
 
 private:

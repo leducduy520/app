@@ -1,14 +1,13 @@
 #include "calculator.hpp"
 #include "thread_pool.hpp"
 #include <iostream>
+#include <limits>
+
 using namespace std;
 
 REGISTER_MODULE_CLASS(Calculator, Calculator)
 
 Calculator::Calculator() : ModuleInterface("Calculator")
-{}
-
-Calculator::~Calculator()
 {}
 
 void Calculator::execute()

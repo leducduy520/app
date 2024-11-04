@@ -26,6 +26,10 @@ typedef void* FunctionAddress;
 #define UnloadLibrary dlclose
 #endif
 
+#if defined(_MSC_VER)
+#undef max
+#endif
+
 class ModuleFactory;
 
 class ModuleInterface

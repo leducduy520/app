@@ -2,6 +2,17 @@
 
 int main()
 {
+#if defined(__clang__)
+    std::cout << "Compiled with Clang\n";
+#elif defined(__GNUC__) || defined(__GNUG__)
+    std::cout << "Compiled with GCC\n";
+#elif defined(_MSC_VER)
+    std::cout << "Compiled with MSVC\n";
+#elif defined(__INTEL_COMPILER)
+    std::cout << "Compiled with Intel Compiler\n";
+#else
+    std::cout << "Unknown compiler\n";
+#endif
     init();
     std::string task;
     while (true)

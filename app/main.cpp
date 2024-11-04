@@ -34,8 +34,6 @@ int main()
     string task;
     while(true)
     {
-        std::cout.flush();
-        std::cout.seekp(0);
         std::cout << "Please enter the task you want to run: ";
         std::cin >> task;
         for (auto& cha : task)

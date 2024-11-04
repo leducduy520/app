@@ -3,3 +3,4 @@
 build
 prebuild
 install
+app/main.cpp

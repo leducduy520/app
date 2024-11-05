@@ -4,3 +4,5 @@ build
 prebuild
 install
 app/pre-definition.hpp
+docs/graph
+docs/html

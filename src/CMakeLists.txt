@@ -1,6 +1,9 @@
 project(src)
-list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR})
-include(RegistModule)
+
+if(THIS_COMPILER_GCC)
+    add_compile_options(-fPIC)
+endif(THIS_COMPILER_GCC)
+
 add_subdirectory(common)
 add_subdirectory(games)
 add_subdirectory(calculator)

@@ -26,24 +26,19 @@ target_set_warnings(
     TARGET ${PROJECT_NAME} ENABLE ${ENABLE_WARNINGS} AS_ERRORS ${ENABLE_WARNINGS_AS_ERRORS}
     )
 
-if(THIS_COMPILER_GCC)
-    target_compile_options(${PROJECT_NAME} PUBLIC -fPIC)
-endif(THIS_COMPILER_GCC)
-
 set_target_properties(
     ${PROJECT_NAME} PROPERTIES PUBLIC_HEADER "${HEADER_FILES}" WINDOWS_EXPORT_ALL_SYMBOLS ON
     )
 
-add_custom_command(
-    TARGET common
-    POST_BUILD
-    COMMAND cmake -E copy_directory_if_different ${PREBUILD_MONGOCXX_DIR}/bin
-            $<TARGET_FILE_DIR:${PROJECT_NAME}>/../bin
-    COMMAND cmake -E copy_directory_if_different ${PREBUILD_MONGOCXX_DIR}/lib
-            $<TARGET_FILE_DIR:${PROJECT_NAME}>/../lib
-    )
-
 if(THIS_OS_WINDOWS)
+    add_custom_command(
+        TARGET ${PROJECT_NAME}
+        POST_BUILD
+        COMMAND cmake -E copy_directory_if_different ${PREBUILD_MONGOCXX_DIR}/bin
+                $<TARGET_FILE_DIR:${PROJECT_NAME}>/../bin
+        COMMAND cmake -E copy_directory_if_different ${PREBUILD_MONGOCXX_DIR}/lib
+                $<TARGET_FILE_DIR:${PROJECT_NAME}>/../lib
+        )
     install(
         TARGETS
             ${PROJECT_NAME}

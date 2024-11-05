@@ -1,3 +1,31 @@
+function(REGISTER_MODULE_LIB moduleid)
+    message("Register module library module: ${moduleid}, path: ${moduleid}")
+    target_compile_definitions(${moduleid} PUBLIC NAME="${moduleid}")
+    get_property(module_setting GLOBAL PROPERTY LIST_REGISTER_MODULE)
+    set_property(
+        GLOBAL PROPERTY LIST_REGISTER_MODULE
+                        "${module_setting} \n\tREGISTER_MODULE_LOCATION(${moduleid}, ${moduleid});"
+        )
+
+    string(TOUPPER "${moduleid}" moduleid_upper)
+    get_property(module_enum GLOBAL PROPERTY LIST_REGISTER_MODULE_ENUM)
+    if(module_enum)
+        string(PREPEND moduleid_upper ",\n\t")
+    else()
+        string(PREPEND moduleid_upper "\t")
+    endif()
+    set_property(GLOBAL PROPERTY LIST_REGISTER_MODULE_ENUM "${module_enum} ${moduleid_upper}")
+endfunction()
+
+function(WRITE_REGISTER_MODULE_LIB)
+    get_property(module_setting GLOBAL PROPERTY LIST_REGISTER_MODULE)
+    get_property(module_enum GLOBAL PROPERTY LIST_REGISTER_MODULE_ENUM)
+    message("LIST_REGISTER_MODULE : ${module_setting}")
+    set(register_lib "${module_setting}")
+    set(register_enum "${module_enum}")
+    configure_file(${PRE_DEFINITION_PATH}.in ${PRE_DEFINITION_PATH})
+endfunction()
+
 macro(regist_module module_name)
     cmake_path(
         RELATIVE_PATH CMAKE_CURRENT_LIST_DIR BASE_DIRECTORY ${CMAKE_SOURCE_DIR} OUTPUT_VARIABLE
@@ -35,7 +63,6 @@ macro(regist_module module_name)
 
     if(THIS_COMPILER_GCC)
         set_target_properties(${module_name} PROPERTIES PREFIX "")
-        target_compile_options(${module_name} PUBLIC -fPIC)
     endif()
 
     install(

@@ -180,5 +180,6 @@
   ],
   "cmake.options.statusBarVisibility": "compact",
   "cmake.parallelJobs": 8,
-  "cmake.setBuildTypeOnMultiConfig": false
+  "cmake.setBuildTypeOnMultiConfig": false,
+  "cmake.configureOnEdit": false
 }

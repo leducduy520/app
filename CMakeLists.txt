@@ -66,6 +66,7 @@ include(Document)
 include(Warnings)
 include(Sanitizer)
 include(FetchLib)
+include(RegistModule)
 
 build_clang_format_target("${CMAKE_SOURCE_DIR}/(build|prebuild|tools|.github|modules)/+")
 build_cmake_format_target("${CMAKE_SOURCE_DIR}/(build|prebuild|tools|.github|modules)/+")
@@ -79,34 +80,6 @@ endif(THIS_OS_LINUX)
 list(APPEND CMAKE_PREFIX_PATH "${PREBUILD_GAMES_DIR}" "${PREBUILD_SFML_DIR}"
      "${PREBUILD_MONGOCXX_DIR}"
      )
-
-function(REGISTER_MODULE_LIB moduleid)
-    message("Register module library module: ${moduleid}, path: ${moduleid}")
-    target_compile_definitions(${moduleid} PUBLIC NAME="${moduleid}")
-    get_property(module_setting GLOBAL PROPERTY LIST_REGISTER_MODULE)
-    set_property(
-        GLOBAL PROPERTY LIST_REGISTER_MODULE
-                        "${module_setting} \n\tREGISTER_MODULE_LOCATION(${moduleid}, ${moduleid});"
-        )
-
-    string(TOUPPER "${moduleid}" moduleid_upper)
-    get_property(module_enum GLOBAL PROPERTY LIST_REGISTER_MODULE_ENUM)
-    if(module_enum)
-        string(PREPEND moduleid_upper ",\n\t")
-    else()
-        string(PREPEND moduleid_upper "\t")
-    endif()
-    set_property(GLOBAL PROPERTY LIST_REGISTER_MODULE_ENUM "${module_enum} ${moduleid_upper}")
-endfunction()
-
-function(WRITE_REGISTER_MODULE_LIB)
-    get_property(module_setting GLOBAL PROPERTY LIST_REGISTER_MODULE)
-    get_property(module_enum GLOBAL PROPERTY LIST_REGISTER_MODULE_ENUM)
-    message("LIST_REGISTER_MODULE : ${module_setting}")
-    set(register_lib "${module_setting}")
-    set(register_enum "${module_enum}")
-    configure_file(${PRE_DEFINITION_PATH}.in ${PRE_DEFINITION_PATH})
-endfunction()
 
 fetchlib()
 add_subdirectory(src)

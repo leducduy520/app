@@ -64,7 +64,6 @@ int main()
         else
         {
             std::cerr << "Invalid task entered\n";
-            break;
         }
     }
     std::cout << "Program finished\n";
@@ -79,7 +78,7 @@ void ask_for_task(std::string& task)
     {
         std::string mid{magic_enum::enum_name(value)};
         tolower_str(mid);
-        std::cout << mid << '\n';
+        std::cout << "  -  " << mid << '\n';
     }
     std::cin >> task;
     toupper_str(task);

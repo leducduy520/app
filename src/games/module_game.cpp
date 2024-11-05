@@ -37,7 +37,7 @@ void ModuleGame::execute()
 
 void ModuleGame::shutdown()
 {
-    if(m_result.valid())
+    if (m_result.valid())
     {
         m_result.get();
     }

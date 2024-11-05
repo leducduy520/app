@@ -61,7 +61,7 @@ macro(regist_module module_name)
                $<INSTALL_INTERFACE:${HEADERS_INCLUDE_DIRS}>
         )
 
-    if(THIS_COMPILER_GCC)
+    if(THIS_COMPILER_GCC OR THIS_COMPILER_CLANG)
         set_target_properties(${module_name} PROPERTIES PREFIX "")
     endif()
 

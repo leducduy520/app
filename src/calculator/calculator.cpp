@@ -72,4 +72,5 @@ void Calculator::shutdown()
     m_finished = true;
     cin.clear();
     cin.ignore(numeric_limits<streamsize>::max(), '\n');
+    this_thread::sleep_for(std::chrono::milliseconds(1000));
 }

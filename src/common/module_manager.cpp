@@ -35,14 +35,9 @@ bool ModuleManager::loadModule(const std::string& moduleName)
 #endif
             return false;
         }
+        loadedModules[moduleName] = hModule;
+        loadedIModules[moduleName].reset(hModuleInterface);
     }
-    else
-    {
-        std::cout << "Loaded module: " << pit->second << '\n';
-        return true;
-    }
-    loadedModules[moduleName] = hModule;
-    loadedIModules[moduleName].reset(hModuleInterface);
     std::cout << "Loaded module: " << pit->second << '\n';
     return true;
 }
@@ -69,6 +64,11 @@ FunctionAddress ModuleManager::getModuleMethod(const std::string& moduleName, co
 // Release a loaded module
 void ModuleManager::releaseModule(const std::string& moduleName)
 {
+    if(loadedModules.empty())
+    {
+        std::cerr << "No loaded modules\n";
+        return;
+    }
     auto pit = loadedModules.find(moduleName);
     if (pit != loadedModules.end())
     {
@@ -87,9 +87,14 @@ void ModuleManager::releaseModule(const std::string& moduleName)
 // Destructor to ensure all modules are released
 ModuleManager::~ModuleManager()
 {
-    loadedIModules.clear();
+    if(loadedModules.empty())
+    {
+        return;
+    }
     for (const auto& pair : loadedModules)
     {
+        loadedIModules[pair.first]->shutdown();
+        loadedIModules.erase(pair.first);
         UnloadLibrary(pair.second);
         std::cout << "Released module in destructor: " << modulePaths[pair.first] << '\n';
     }

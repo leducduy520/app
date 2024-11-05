@@ -32,7 +32,9 @@ macro(regist_module module_name)
         PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}> $<BUILD_INTERFACE:${DIR_LIST}>
                $<INSTALL_INTERFACE:${HEADERS_INCLUDE_DIRS}>
         )
+
     if(THIS_COMPILER_GCC)
+        set_target_properties(${module_name} PROPERTIES PREFIX "")
         target_compile_options(${module_name} PUBLIC -fPIC)
     endif()
 

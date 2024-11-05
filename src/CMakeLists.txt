@@ -1,5 +1,6 @@
 project(src)
-
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR})
+include(RegistModule)
 add_subdirectory(common)
 add_subdirectory(games)
 add_subdirectory(calculator)

@@ -80,13 +80,13 @@ list(APPEND CMAKE_PREFIX_PATH "${PREBUILD_GAMES_DIR}" "${PREBUILD_SFML_DIR}"
      "${PREBUILD_MONGOCXX_DIR}"
      )
 
-function(REGISTER_MODULE_LIB moduleid modulepath)
-    message("Register module library module: ${moduleid}, path: ${modulepath}")
+function(REGISTER_MODULE_LIB moduleid)
+    message("Register module library module: ${moduleid}, path: ${moduleid}")
+    target_compile_definitions(${moduleid} PUBLIC NAME="${moduleid}")
     get_property(module_setting GLOBAL PROPERTY LIST_REGISTER_MODULE)
     set_property(
-        GLOBAL
-        PROPERTY LIST_REGISTER_MODULE
-                 "${module_setting} \n\tREGISTER_MODULE_LOCATION(${moduleid}, ${modulepath});"
+        GLOBAL PROPERTY LIST_REGISTER_MODULE
+                        "${module_setting} \n\tREGISTER_MODULE_LOCATION(${moduleid}, ${moduleid});"
         )
 
     string(TOUPPER "${moduleid}" moduleid_upper)

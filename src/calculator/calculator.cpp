@@ -4,10 +4,9 @@
 #include <limits>
 
 using namespace std;
+REGISTER_MODULE_CLASS(Calculator, NAME)
 
-REGISTER_MODULE_CLASS(Calculator, Calculator)
-
-Calculator::Calculator() : ModuleInterface("Calculator")
+Calculator::Calculator() : ModuleInterface(NAME)
 {}
 
 void Calculator::execute()

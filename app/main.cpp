@@ -20,28 +20,26 @@ int main()
         ModuleInterface* mdinterface = nullptr;
         std::cout << "Please enter the task you want to run: ";
         std::cin >> task;
-        for (auto& cha : task)
-        {
-            cha = static_cast<char>(toupper(cha));
-        }
+        toupper_str(task);
         auto etask = magic_enum::enum_cast<ModuleName>(task);
         if (etask.has_value())
         {
+            auto moduleid = toModuleId(etask.value());
             switch (etask.value())
             {
             case ModuleName::GAMES:
             {
-                if (ModuleManager::getInstance()->loadModule("Games"))
+                if (ModuleManager::getInstance()->loadModule(moduleid))
                 {
-                    mdinterface = ModuleManager::getInstance()->getInterface("Games");
+                    mdinterface = ModuleManager::getInstance()->getInterface(moduleid);
                 }
             }
             break;
             case ModuleName::CALCULATOR:
             {
-                if (ModuleManager::getInstance()->loadModule("Calculator"))
+                if (ModuleManager::getInstance()->loadModule(moduleid))
                 {
-                    mdinterface = ModuleManager::getInstance()->getInterface("Calculator");
+                    mdinterface = ModuleManager::getInstance()->getInterface(moduleid);
                 }
             }
             break;

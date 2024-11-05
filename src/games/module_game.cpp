@@ -5,9 +5,9 @@
 #include "gameB.hpp"
 #include <exception>
 
-REGISTER_MODULE_CLASS(ModuleGame, Games)
+REGISTER_MODULE_CLASS(ModuleGame, NAME)
 
-ModuleGame::ModuleGame() : ModuleInterface("Games")
+ModuleGame::ModuleGame() : ModuleInterface(NAME)
 {
     REGISTAR_GAME(gameA, A);
     REGISTAR_GAME(gameB, B);

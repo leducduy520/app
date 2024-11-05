@@ -72,6 +72,7 @@ void ModuleManager::releaseModule(const std::string& moduleName)
     auto pit = loadedModules.find(moduleName);
     if (pit != loadedModules.end())
     {
+        loadedIModules[moduleName]->shutdown();
         loadedIModules.erase(moduleName);
         UnloadLibrary(pit->second);
         loadedModules.erase(pit);
@@ -142,7 +143,7 @@ ModuleManager* ModuleManager::getInstance()
     return m_instance.get();
 }
 
-ModuleInterface::ModuleInterface(std::string modulename) : m_moduleName(std::move(modulename))
+ModuleInterface::ModuleInterface(std::string modulename) : m_moduleName(std::move(modulename)), m_finished(false)
 {}
 
 ModuleFactory* ModuleFactory::Instance()

@@ -9,6 +9,7 @@ public:
 private:
     // CreateGameFunc m_createGameFunc;
 public:
-    EXPORT_API ModuleGame();
+    ModuleGame();
     void execute() override;
+    void shutdown() override;
 };

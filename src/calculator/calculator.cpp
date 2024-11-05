@@ -11,7 +11,7 @@ Calculator::Calculator() : ModuleInterface(NAME)
 
 void Calculator::execute()
 {
-    while (true)
+    while (!m_finished)
     {
         double num1{}, num2{};
         char operation{};
@@ -23,6 +23,10 @@ void Calculator::execute()
             cin.clear();
             cin.ignore(numeric_limits<streamsize>::max(), '\n');
             break;
+        }
+        if (m_finished)
+        {
+            return;
         }
 
         double result{};
@@ -61,4 +65,11 @@ void Calculator::execute()
         }
         cout << "Result: " << result << '\n';
     }
+}
+
+void Calculator::shutdown()
+{
+    m_finished = true;
+    cin.clear();
+    cin.ignore(numeric_limits<streamsize>::max(), '\n');
 }

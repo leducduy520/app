@@ -7,6 +7,7 @@
 #include <memory>
 #include <functional>
 #include <mutex>
+#include <future>
 
 #ifdef _WIN32
 #include <Windows.h>
@@ -36,6 +37,8 @@ class ModuleInterface
 {
 protected:
     const std::string m_moduleName;
+    bool m_finished;
+    std::future<void> m_result;
 
 public:
     ModuleInterface(std::string moduleName);
@@ -43,6 +46,7 @@ public:
     virtual ~ModuleInterface() = default;
 
     virtual void execute() = 0;
+    virtual void shutdown() = 0;
 };
 
 class ModuleFactory

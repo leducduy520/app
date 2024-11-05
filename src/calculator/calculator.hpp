@@ -6,6 +6,7 @@ class Calculator : public ModuleInterface
 public:
     Calculator();
     void execute() override;
+    void shutdown() override;
 
 private:
     template <typename T>

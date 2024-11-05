@@ -72,10 +72,10 @@ void ModuleManager::releaseModule(const std::string& moduleName)
     auto pit = loadedModules.find(moduleName);
     if (pit != loadedModules.end())
     {
-        loadedModules.erase(pit);
-        UnloadLibrary(pit->second);
-        std::cout << "Released module: " << modulePaths[moduleName] << '\n';
         loadedIModules.erase(moduleName);
+        UnloadLibrary(pit->second);
+        loadedModules.erase(pit);
+        std::cout << "Released module: " << modulePaths[moduleName] << '\n';
     }
     else
     {

@@ -17,13 +17,11 @@ int main()
     std::string task;
     while (true)
     {
-        ModuleInterface* mdinterface = nullptr;
-        std::cout << "Please enter the task you want to run: ";
-        std::cin >> task;
-        toupper_str(task);
+        ask_for_task(task);
         auto etask = magic_enum::enum_cast<ModuleName>(task);
         if (etask.has_value())
         {
+            ModuleInterface* mdinterface = nullptr;
             auto moduleid = toModuleId(etask.value());
             switch (etask.value())
             {
@@ -43,8 +41,19 @@ int main()
                 }
             }
             break;
+            case ModuleName::REMOVE:
+            {
+                std::cout << "Type the name of the module you want to remove: ";
+                std::cin >> moduleid;
+                ModuleManager::getInstance()->releaseModule(moduleid);
+            }
+            break;
             default:
                 break;
+            }
+            if (mdinterface != nullptr)
+            {
+                mdinterface->execute();
             }
         }
         else if (task == "QUIT")
@@ -57,11 +66,21 @@ int main()
             std::cerr << "Invalid task entered\n";
             break;
         }
-        if (mdinterface != nullptr)
-        {
-            mdinterface->execute();
-        }
     }
     std::cout << "Program finished\n";
     return 0;
+}
+
+void ask_for_task(std::string& task)
+{
+    std::cout << "Please enter the task you want to run:\n";
+    std::cout << "Available tasks:\n";
+    for (const auto& value : magic_enum::enum_values<ModuleName>())
+    {
+        std::string mid{magic_enum::enum_name(value)};
+        tolower_str(mid);
+        std::cout << mid << '\n';
+    }
+    std::cin >> task;
+    toupper_str(task);
 }

@@ -11,6 +11,7 @@ Calculator::Calculator() : ModuleInterface(NAME)
 
 void Calculator::execute()
 {
+    m_result = ThreadPool::getInstance()->submit(100, [](){});
     while (!m_finished)
     {
         double num1{}, num2{};
@@ -22,11 +23,8 @@ void Calculator::execute()
             cout << "Invalid expresion!\n";
             cin.clear();
             cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            m_finished = true;
             break;
-        }
-        if (m_finished)
-        {
-            return;
         }
 
         double result{};
@@ -59,6 +57,7 @@ void Calculator::execute()
         break;
         default:
         {
+            m_finished = true;
             cout << "Error: Invalid operator\n";
         }
         break;
@@ -69,8 +68,8 @@ void Calculator::execute()
 
 void Calculator::shutdown()
 {
-    m_finished = true;
-    cin.clear();
-    cin.ignore(numeric_limits<streamsize>::max(), '\n');
-    this_thread::sleep_for(std::chrono::milliseconds(1000));
+    if(m_result.valid())
+    {
+        m_result.get();
+    }
 }

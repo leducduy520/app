@@ -170,10 +170,6 @@
     "editor.defaultFormatter": "cheshirekow.cmake-format",
     "editor.formatOnSave": true
   },
-  "cmake.configureArgs": [
-    "--graphviz=docs/graph/graph.dot",
-    "-DCMAKE_INSTALL_PREFIX=build/install"
-  ],
   "C_Cpp.codeAnalysis.clangTidy.checks.disabled": [
     "cppcoreguidelines-owning-memory",
     "readability-isolate-declaration"

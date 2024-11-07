@@ -1,11 +1,5 @@
 project(common)
 
-cmake_path(
-    RELATIVE_PATH CMAKE_CURRENT_LIST_DIR BASE_DIRECTORY ${CMAKE_SOURCE_DIR} OUTPUT_VARIABLE
-    REL_PATH
-    )
-set(HEADERS_INCLUDE_DIRS ${CMAKE_INSTALL_INCLUDEDIR}/${REL_PATH})
-
 find_package(mongocxx REQUIRED)
 
 link_libraries(mongo::mongocxx_shared)
@@ -15,10 +9,10 @@ file(GLOB HEADER_FILES "${CMAKE_CURRENT_LIST_DIR}/*.hpp" "${CMAKE_CURRENT_LIST_D
 
 add_library(${PROJECT_NAME} SHARED ${SOURCE_FILES})
 
-target_link_libraries(${PROJECT_NAME} PUBLIC rapidcsv magic_enum nlohmann_json::nlohmann_json)
+# target_link_libraries(${PROJECT_NAME} PUBLIC rapidcsv magic_enum nlohmann_json::nlohmann_json)
 
 target_include_directories(
-    ${PROJECT_NAME} PUBLIC $<INSTALL_INTERFACE:${HEADERS_INCLUDE_DIRS}>
+    ${PROJECT_NAME} PUBLIC $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}>
                            $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}>
     )
 
@@ -40,31 +34,38 @@ if(THIS_OS_WINDOWS)
                 $<TARGET_FILE_DIR:${PROJECT_NAME}>/../lib
         )
     install(
-        TARGETS
-            ${PROJECT_NAME}
-            RUNTIME_DEPENDENCIES
-            PRE_INCLUDE_REGEXES
-            "mongo*"
-            "bson*"
-            PRE_EXCLUDE_REGEXES
-            "api-ms-"
-            "ext-ms-"
-            POST_EXCLUDE_REGEXES
-            ".*system32/.*\\.dll"
+        TARGETS ${PROJECT_NAME}
+        EXPORT ${PROJECT_NAME}_targets
+        RUNTIME_DEPENDENCIES
+        PRE_INCLUDE_REGEXES
+        "mongo*"
+        "bson*"
+        PRE_EXCLUDE_REGEXES
+        "api-ms-"
+        "ext-ms-"
+        POST_EXCLUDE_REGEXES
+        ".*system32/.*\\.dll"
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT Runtime
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT Development
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT Development
-        PUBLIC_HEADER DESTINATION ${HEADERS_INCLUDE_DIRS} COMPONENT PublicHeader
+        INCLUDES
+        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+        PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}
+                      COMPONENT PublicHeader
         )
 endif()
 
 if(THIS_OS_LINUX)
     install(
         TARGETS ${PROJECT_NAME}
+        EXPORT ${PROJECT_NAME}_targets
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT Runtime
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT Development
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT Development
-        PUBLIC_HEADER DESTINATION ${HEADERS_INCLUDE_DIRS} COMPONENT PublicHeader
+        INCLUDES
+        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+        PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}
+                      COMPONENT PublicHeader
         )
     find_package(mongoc-1.0 REQUIRED)
     find_package(bsoncxx REQUIRED)
@@ -74,4 +75,27 @@ if(THIS_OS_LINUX)
         )
 endif()
 
+install(
+    EXPORT ${PROJECT_NAME}_targets
+    FILE ${PROJECT_NAME}-targets.cmake
+    NAMESPACE ${PROJECT_NAME}::
+    DESTINATION lib/cmake/${PROJECT_NAME}
+    )
+
+write_basic_package_version_file(
+    "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-config-version.cmake" VERSION 0.0.1
+    COMPATIBILITY AnyNewerVersion
+    )
+
+configure_package_config_file(
+    "${CMAKE_CURRENT_SOURCE_DIR}/${PROJECT_NAME}-config.cmake.in"
+    "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-config.cmake"
+    INSTALL_DESTINATION lib/cmake/${PROJECT_NAME}
+    )
+
+install(
+    FILES "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-config.cmake"
+          "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-config-version.cmake"
+    DESTINATION lib/cmake/${PROJECT_NAME}
+    )
 # install(DIRECTORY ${CMAKE_SOURCE_DIR}/prebuild/mongo-cxx-driver/ DESTINATION .)

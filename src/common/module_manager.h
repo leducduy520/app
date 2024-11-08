@@ -114,6 +114,6 @@ public:
 #endif
 
 #define REGISTER_MODULE_CLASS(moduleclass, moduleName)                                                                 \
-    const ModuleRegistar<moduleclass> register##moduleclass(moduleName);
+    static const ModuleRegistar<moduleclass> register##moduleclass(moduleName);
 
 #endif // __MODULE_MANAGER_H__

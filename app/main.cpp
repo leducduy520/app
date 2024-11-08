@@ -26,14 +26,8 @@ int main()
             switch (etask.value())
             {
             case ModuleName::GAMES:
-            {
-                if (ModuleManager::getInstance()->loadModule(moduleid))
-                {
-                    mdinterface = ModuleManager::getInstance()->getInterface(moduleid);
-                }
-            }
-            break;
             case ModuleName::CALCULATOR:
+            case ModuleName::TRANSLATE:
             {
                 if (ModuleManager::getInstance()->loadModule(moduleid))
                 {

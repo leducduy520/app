@@ -97,7 +97,8 @@
     "string_view": "cpp",
     "numbers": "cpp",
     "semaphore": "cpp",
-    "cinttypes": "cpp"
+    "cinttypes": "cpp",
+    "*.dat": "cpp"
   },
   "C_Cpp_Runner.cCompilerPath": "gcc",
   "C_Cpp_Runner.cppCompilerPath": "g++",

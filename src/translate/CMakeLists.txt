@@ -1,2 +1,6 @@
 project(translate)
 regist_module(${PROJECT_NAME})
+find_package(ZLIB REQUIRED)
+find_package(cpprestsdk REQUIRED)
+target_link_libraries(${PROJECT_NAME} PRIVATE cpprestsdk::cpprest)
+install(IMPORTED_RUNTIME_ARTIFACTS cpprestsdk::cpprest)

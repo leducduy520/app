@@ -9,6 +9,8 @@
 #include <iostream>
 #include <memory>
 #include <cstdint>
+#include <locale>
+#include <codecvt>
 #include "module_manager.h"
 #include "magic_enum.hpp"
 

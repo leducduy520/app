@@ -3,7 +3,8 @@
       {
           "name": "Win32",
           "includePath": [
-              "${workspaceFolder}/**"
+              "${workspaceFolder}/**",
+              "C:/vcpkg/packages/cpprestsdk_x64-windows/include"
           ],
           "defines": [
               "_DEBUG",

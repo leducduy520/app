@@ -1,3 +1,31 @@
+if(NOT DEFINED ENV{VCPKG_ROOT})
+    if(EXISTS "C:/vcpkg")
+        set(VCPKG_ROOT "C:/vcpkg")
+    elseif(EXISTS "/usr/local/vcpkg")
+        set(VCPKG_ROOT "/usr/local/vcpkg")
+    else()
+        message(
+            FATAL_ERROR "VCPKG_ROOT is not set and vcpkg could not be found in common locations."
+            )
+    endif()
+else()
+    set(VCPKG_ROOT "$ENV{VCPKG_ROOT}")
+endif()
+
+# Try to find the vcpkg executable in the system PATH
+find_program(VCPKG_EXECUTABLE vcpkg HINTS ENV VCPKG_ROOT)
+
+if(NOT VCPKG_EXECUTABLE)
+    message(FATAL_ERROR "vcpkg executable not found in PATH. Please add it or set VCPKG_ROOT.")
+else()
+    # Get the root directory of vcpkg from the executable's path
+    get_filename_component(VCPKG_ROOT "${VCPKG_EXECUTABLE}" DIRECTORY)
+    message(STATUS "Detected vcpkg root directory: ${VCPKG_ROOT}")
+
+    # Set the toolchain file path based on the detected root
+    set(CMAKE_TOOLCHAIN_FILE "${VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake" CACHE STRING "")
+endif()
+
 cmake_minimum_required(VERSION 3.25)
 
 project(App VERSION 0.0.1 LANGUAGES C CXX)

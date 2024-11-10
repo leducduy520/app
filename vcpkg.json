@@ -1,0 +1,14 @@
+{
+  "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg-tool/main/docs/vcpkg.schema.json",
+  "name": "app",
+  "version": "0.0.1",
+  "dependencies": [
+    "cpprestsdk"
+  ],
+  "overrides": [
+    {
+      "name": "cpprestsdk",
+      "version": "2.10.17"
+    }
+  ]
+}

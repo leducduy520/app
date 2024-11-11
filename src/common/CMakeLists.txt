@@ -1,5 +1,7 @@
 project(common)
 
+find_package(mongoc-1.0 REQUIRED)
+find_package(bsoncxx REQUIRED)
 find_package(mongocxx REQUIRED)
 
 link_libraries(mongo::mongocxx_shared)
@@ -67,8 +69,6 @@ if(THIS_OS_LINUX)
         PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}
                       COMPONENT PublicHeader
         )
-    find_package(mongoc-1.0 REQUIRED)
-    find_package(bsoncxx REQUIRED)
     install(
         IMPORTED_RUNTIME_ARTIFACTS mongo::mongocxx_shared mongo::mongoc_shared mongo::bson_shared
         mongo::bsoncxx_shared

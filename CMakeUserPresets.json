@@ -1,0 +1,52 @@
+{
+    "version": 6,
+    "configurePresets": [
+        {
+            "name": "base",
+            "inherits": [
+                "vcpkg"
+            ],
+            "cacheVariables": {
+                "X_VCPKG_APPLOCAL_DEPS_INSTALL": true,
+                "VCPKG_TRACE_FIND_PACKAGE": true
+            }
+        },
+        {
+            "name": "base-linux",
+            "inherits": [
+                "base"
+            ],
+            "environment": {
+                "VCPKG_ROOT": "/usr/local/vcpkg",
+                "PATH": "$env{VCPKG_ROOT}:$penv{PATH}"
+            },
+            "cacheVariables": {
+                "CMAKE_GENERATOR": "Ninja"
+            }
+        },
+        {
+            "name": "base-windows",
+            "inherits": [
+                "base"
+            ],
+            "environment": {
+                "VCPKG_ROOT": "C:/vcpkg",
+                "PATH": "$env{VCPKG_ROOT};$penv{PATH}"
+            }
+        },
+        {
+            "name": "linux-dbg",
+            "inherits": [
+                "base-linux",
+                "debug"
+            ]
+        },
+        {
+            "name": "linux-rel",
+            "inherits": [
+                "base-linux",
+                "release"
+            ]
+        }
+    ]
+}

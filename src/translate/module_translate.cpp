@@ -17,14 +17,19 @@ using namespace concurrency::streams; // Asynchronous streams
 // using namespace std;
 REGISTER_MODULE_CLASS(ModuleTranslator, NAME)
 
-std::wstring cast_wstring_1(const char* cstr)
+string_t cast_wstring_1(const char* cstr)
 {
+#ifdef _UTF16_STRINGS
     static std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
     return converter.from_bytes(cstr);
+#else
+    return string_t(cstr);
+#endif
 }
 
-std::wstring cast_wstring_2(const char* cstr)
+string_t cast_wstring_2(const char* cstr)
 {
+#ifdef _UTF16_STRINGS
     const size_t len = std::mbstowcs(nullptr, cstr, 0) + 1; // Get the required length
 
     // Allocate buffer for the wide string
@@ -35,6 +40,9 @@ std::wstring cast_wstring_2(const char* cstr)
     std::wstring wstr(wbuffer);
     delete[] wbuffer; // Free the buffer
     return wstr;
+#else
+    return string_t(cstr);
+#endif
 }
 
 ModuleTranslator::ModuleTranslator() : ModuleInterface(NAME)
@@ -48,16 +56,16 @@ void ModuleTranslator::execute()
     const char* rapidapi_key = std::getenv("RAPIDAPI_KEY");
     if (rapidapi_key == nullptr)
     {
-        std::cerr << "RAPIDAPI_KEY environment variable is not set." << std::endl;
+        std::cerr << "RAPIDAPI_KEY environment variable is not set.\n";
         return;
     }
     auto api_key = cast_wstring_1(rapidapi_key);
 
-    std::wstring text;
+    string_t text;
     std::cout << "Enter the string in English you want to translate to Vietnamese:\n";
-    std::wcin.clear();
-    std::wcin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-    std::getline(std::wcin, text);
+    ucin.clear();
+    ucin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+    std::getline(ucin, text);
 
     if (text == U("quit"))
     {

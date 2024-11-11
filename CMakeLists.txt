@@ -23,7 +23,7 @@ else()
     message(STATUS "Detected vcpkg root directory: ${VCPKG_ROOT}")
 
     # Set the toolchain file path based on the detected root
-    # set(CMAKE_TOOLCHAIN_FILE "${VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake" CACHE STRING "")
+    set(CMAKE_TOOLCHAIN_FILE "${VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake" CACHE STRING "")
 endif()
 
 cmake_minimum_required(VERSION 3.25)

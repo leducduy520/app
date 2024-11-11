@@ -12,15 +12,13 @@
         {
             "name": "release",
             "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "Release",
-                "VCPKG_TARGET_TRIPLET": "x64-linux-rel"
+                "CMAKE_BUILD_TYPE": "Release"
             }
         },
         {
             "name": "debug",
             "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "Debug",
-                "VCPKG_TARGET_TRIPLET": "x64-linux-dbg"
+                "CMAKE_BUILD_TYPE": "Debug"
             }
         }
     ]

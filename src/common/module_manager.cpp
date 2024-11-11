@@ -6,6 +6,7 @@ std::once_flag ModuleManager::m_flag;
 // Register a module with its expected path
 void ModuleManager::registerModule(const std::string& moduleName, const std::string& modulePath)
 {
+    std::cout << "Registering module " << moduleName << " with " << modulePath << '\n';
     modulePaths[moduleName] = modulePath;
 }
 
@@ -25,13 +26,22 @@ bool ModuleManager::loadModule(const std::string& moduleName)
     if (hModuleit == loadedModules.end())
     {
         hModule = LoadLibraryFunction(pit->second.c_str());
-        hModuleInterface = ModuleFactory::Instance()->CreateModule(moduleName);
-        if (hModule == nullptr || hModuleInterface == nullptr)
+        if (hModule == nullptr)
         {
 #ifdef _WIN32
             std::cerr << "Failed to load module: " << moduleName << " Error: " << GetLastError() << '\n';
 #else
             std::cerr << "Failed to load module: " << moduleName << " Error: " << dlerror() << '\n';
+#endif
+            return false;
+        }
+        hModuleInterface = ModuleFactory::Instance()->CreateModule(moduleName);
+        if (hModuleInterface == nullptr)
+        {
+#ifdef _WIN32
+            std::cerr << "Failed to create module: " << moduleName << " Error: " << GetLastError() << '\n';
+#else
+            std::cerr << "Failed to create module: " << moduleName << " Error: " << dlerror() << '\n';
 #endif
             return false;
         }
@@ -64,7 +74,7 @@ FunctionAddress ModuleManager::getModuleMethod(const std::string& moduleName, co
 // Release a loaded module
 void ModuleManager::releaseModule(const std::string& moduleName)
 {
-    if(loadedModules.empty())
+    if (loadedModules.empty())
     {
         std::cerr << "No loaded modules\n";
         return;
@@ -87,7 +97,7 @@ void ModuleManager::releaseModule(const std::string& moduleName)
 // Destructor to ensure all modules are released
 ModuleManager::~ModuleManager()
 {
-    if(loadedModules.empty())
+    if (loadedModules.empty())
     {
         return;
     }

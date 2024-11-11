@@ -9,7 +9,7 @@
       "stopAtEntry": false,
       "externalConsole": true,
       "cwd": "e:/VSC/a1_C_plus_plus/nonameproject",
-      "program": "e:/VSC/a1_C_plus_plus/nonameproject/build/Debug/outDebug",
+      "program": "e:/VSC/a1_C_plus_plus/nonameproject/build/Debug/bin/Myapp.exe",
       "MIMode": "gdb",
       "miDebuggerPath": "gdb",
       "setupCommands": [

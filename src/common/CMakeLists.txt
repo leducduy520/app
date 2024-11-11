@@ -31,9 +31,9 @@ if(THIS_OS_WINDOWS)
         TARGET ${PROJECT_NAME}
         POST_BUILD
         COMMAND cmake -E copy_directory_if_different ${PREBUILD_MONGOCXX_DIR}/bin
-                $<TARGET_FILE_DIR:${PROJECT_NAME}>/../bin
+                $<TARGET_PROPERTY:${PROJECT_NAME},RUNTIME_OUTPUT_DIRECTORY_$<UPPER_CASE:$<CONFIG>>>
         COMMAND cmake -E copy_directory_if_different ${PREBUILD_MONGOCXX_DIR}/lib
-                $<TARGET_FILE_DIR:${PROJECT_NAME}>/../lib
+                $<TARGET_PROPERTY:${PROJECT_NAME},ARCHIVE_OUTPUT_DIRECTORY_$<UPPER_CASE:$<CONFIG>>>
         )
     install(
         TARGETS ${PROJECT_NAME}

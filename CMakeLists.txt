@@ -63,9 +63,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 
 # Set custom variables
 set(PREBUILD_DIR "${CMAKE_SOURCE_DIR}/prebuild")
-set(PREBUILD_GAMES_DIR "${PREBUILD_DIR}/games")
-set(PREBUILD_MONGOCXX_DIR "${PREBUILD_DIR}/mongo-cxx-driver")
-set(PREBUILD_SFML_DIR "${PREBUILD_DIR}/SFML")
+set(PREBUILD_MONGOCXX_DIR "${PREBUILD_DIR}/mongocxx")
 set(PRE_DEFINITION_PATH ${CMAKE_SOURCE_DIR}/app/pre-definition.hpp)
 
 # Set output directory for each configuration

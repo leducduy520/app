@@ -40,40 +40,28 @@
             "inherits": [
                 "base-linux",
                 "debug"
-            ],
-            "cacheVariables": {
-                "VCPKG_TARGET_TRIPLET": "x64-linux-dbg"
-            }
+            ]
         },
         {
             "name": "linux-rel",
             "inherits": [
                 "base-linux",
                 "release"
-            ],
-            "cacheVariables": {
-                "VCPKG_TARGET_TRIPLET": "x64-linux-rel"
-            }
+            ]
         },
         {
             "name": "windows-dbg",
             "inherits": [
                 "base-windows",
                 "debug"
-            ],
-            "cacheVariables": {
-                "VCPKG_TARGET_TRIPLET": "x64-windows-dbg"
-            }
+            ]
         },
         {
             "name": "windows-rel",
             "inherits": [
                 "base-windows",
                 "release"
-            ],
-            "cacheVariables": {
-                "VCPKG_TARGET_TRIPLET": "x64-windows-rel"
-            }
+            ]
         }
     ]
 }

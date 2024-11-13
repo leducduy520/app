@@ -119,9 +119,5 @@ void ModuleTranslator::execute()
 
 void ModuleTranslator::shutdown()
 {
-    if (m_result.valid())
-    {
-        m_result.get();
-        std::cout << m_moduleName << " translation finished\n";
-    }
+    std::cout << m_moduleName << " translation finished\n";
 }

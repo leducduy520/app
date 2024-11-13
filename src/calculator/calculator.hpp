@@ -9,6 +9,7 @@ public:
     void shutdown() override;
 
 private:
+    bool m_finished;
     template <typename T>
     T add(T num1, T num2) const;
     template <typename T>

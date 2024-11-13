@@ -2,9 +2,7 @@
 #include "thread_pool.hpp"
 
 gameA::gameA()
-{
-    cout << "gameA default constructor\n";
-}
+{}
 
 void gameA::run()
 {

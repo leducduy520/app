@@ -6,12 +6,11 @@
 using namespace std;
 REGISTER_MODULE_CLASS(Calculator, NAME)
 
-Calculator::Calculator() : ModuleInterface(NAME)
+Calculator::Calculator() : ModuleInterface(NAME), m_finished(false)
 {}
 
 void Calculator::execute()
 {
-    m_result = ThreadPool::getInstance()->submit(100, [](){});
     while (!m_finished)
     {
         double num1{}, num2{};
@@ -64,12 +63,10 @@ void Calculator::execute()
         }
         cout << "Result: " << result << '\n';
     }
+    m_finished = false;
 }
 
 void Calculator::shutdown()
 {
-    if(m_result.valid())
-    {
-        m_result.get();
-    }
+    
 }

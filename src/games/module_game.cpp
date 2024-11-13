@@ -23,10 +23,10 @@ void ModuleGame::execute()
     if (game != nullptr)
     {
         std::cout << "Game created: " << gameId << '\n';
-        m_result = ThreadPool::getInstance()->submit(100, [game]() {
+        m_results.push(ThreadPool::getInstance()->submit(100, [game]() {
             game->run();
             delete game;
-        });
+        }));
         std::cout << "Game run: " << gameId << '\n';
     }
     else
@@ -37,9 +37,13 @@ void ModuleGame::execute()
 
 void ModuleGame::shutdown()
 {
-    if (m_result.valid())
+    std::cout << "Game shutdown\n";
+    while (!m_results.empty())
     {
-        m_result.get();
+        if (m_results.front().valid())
+        {
+            m_results.front().get();
+        }
+        m_results.pop();
     }
-    m_finished = true;
 }

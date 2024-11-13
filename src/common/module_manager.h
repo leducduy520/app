@@ -37,8 +37,6 @@ class ModuleInterface
 {
 protected:
     const std::string m_moduleName;
-    bool m_finished;
-    std::future<void> m_result;
 
 public:
     ModuleInterface(std::string moduleName);
@@ -51,12 +49,14 @@ public:
 
 class ModuleFactory
 {
-    std::unordered_map<std::string, std::function<ModuleInterface*(void)>> m_modules;
+    std::unordered_map<std::string, std::function<std::shared_ptr<ModuleInterface>(void)>> m_modules;
+    std::unordered_map<std::string, std::shared_ptr<ModuleInterface>> loadedModuleClasses;
 
 public:
-    static ModuleFactory* Instance();
-    ModuleInterface* CreateModule(const std::string& moduleName);
-    void RegisterModule(const std::string& moduleName, std::function<ModuleInterface*(void)> createFunc);
+    std::shared_ptr<ModuleInterface> createModule(const std::string& moduleName);
+    void registerModule(const std::string& moduleName, std::function<std::shared_ptr<ModuleInterface>(void)> createFunc);
+    void releaseModule(const std::string& moduleName);
+    void release();
 };
 
 class ModuleManager
@@ -73,12 +73,13 @@ public:
     FunctionAddress getModuleMethod(const std::string& moduleName, const std::string& functionName);
 
     // Release a loaded module
-    void releaseModule(const std::string& moduleName);
+    void releaseModuleLib(const std::string& moduleName);
+    void releaseModuleClass(const std::string& moduleName);
 
     // Get the actual path of a loaded module
     std::string getModulePath(const std::string& moduleName);
 
-    ModuleInterface* getInterface(const std::string& moduleName);
+    std::shared_ptr<ModuleInterface> getModuleClass(const std::string& moduleName);
 
     static ModuleManager* getInstance();
 
@@ -86,13 +87,13 @@ public:
     ~ModuleManager();
     ModuleManager() = default;
 
+    ModuleFactory Factory;
+
 private:
-    friend class ModuleFactory;
     static std::unique_ptr<ModuleManager> m_instance;
     static std::once_flag m_flag;
     std::unordered_map<std::string, std::string> modulePaths;
-    std::unordered_map<std::string, LibraryHandle> loadedModules;
-    std::unordered_map<std::string, std::unique_ptr<ModuleInterface>> loadedIModules;
+    std::unordered_map<std::string, LibraryHandle> loadedModuleLibs;
 };
 
 template <typename T>
@@ -101,7 +102,9 @@ class ModuleRegistar
 public:
     ModuleRegistar(std::string moduleName)
     {
-        ModuleFactory::Instance()->RegisterModule(moduleName, []() -> ModuleInterface* { return new T(); });
+        ModuleManager::getInstance()->Factory.registerModule(moduleName, []() -> std::shared_ptr<ModuleInterface> {
+            return std::make_shared<T>();
+        });
     }
 };
 

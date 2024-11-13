@@ -21,7 +21,8 @@ int main()
         auto etask = magic_enum::enum_cast<ModuleName>(task);
         if (etask.has_value())
         {
-            ModuleInterface* mdinterface = nullptr;
+            std::shared_ptr<ModuleInterface> mdinterface = nullptr;
+            std::weak_ptr<ModuleInterface> winterface;
             auto moduleid = toModuleId(etask.value());
             switch (etask.value())
             {
@@ -31,7 +32,8 @@ int main()
             {
                 if (ModuleManager::getInstance()->loadModule(moduleid))
                 {
-                    mdinterface = ModuleManager::getInstance()->getInterface(moduleid);
+                    mdinterface = ModuleManager::getInstance()->getModuleClass(moduleid);
+                    winterface = mdinterface;
                 }
             }
             break;
@@ -39,15 +41,15 @@ int main()
             {
                 std::cout << "Type the name of the module you want to remove: ";
                 std::cin >> moduleid;
-                ModuleManager::getInstance()->releaseModule(moduleid);
+                ModuleManager::getInstance()->releaseModuleClass(moduleid);
             }
             break;
             default:
                 break;
             }
-            if (mdinterface != nullptr)
+            if (auto minterface = winterface.lock())
             {
-                mdinterface->execute();
+                minterface->execute();
             }
         }
         else if (task == "QUIT")

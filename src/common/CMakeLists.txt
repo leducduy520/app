@@ -1,15 +1,13 @@
 project(common)
 
-find_package(mongoc-1.0 REQUIRED)
-find_package(bsoncxx REQUIRED)
-find_package(mongocxx REQUIRED)
-
-link_libraries(mongo::mongocxx_shared)
-
 file(GLOB SOURCE_FILES "${CMAKE_CURRENT_LIST_DIR}/*.cpp" "${CMAKE_CURRENT_LIST_DIR}/*.c")
 file(GLOB HEADER_FILES "${CMAKE_CURRENT_LIST_DIR}/*.hpp" "${CMAKE_CURRENT_LIST_DIR}/*.h")
 
 add_library(${PROJECT_NAME} SHARED ${SOURCE_FILES})
+
+find_package(mongocxx REQUIRED)
+find_package(cpprestsdk REQUIRED)
+target_link_libraries(${PROJECT_NAME} PUBLIC cpprestsdk::cpprest mongo::mongocxx_shared)
 
 # target_link_libraries(${PROJECT_NAME} PUBLIC rapidcsv magic_enum nlohmann_json::nlohmann_json)
 
@@ -26,54 +24,16 @@ set_target_properties(
     ${PROJECT_NAME} PROPERTIES PUBLIC_HEADER "${HEADER_FILES}" WINDOWS_EXPORT_ALL_SYMBOLS ON
     )
 
-if(THIS_OS_WINDOWS)
-    add_custom_command(
-        TARGET ${PROJECT_NAME}
-        POST_BUILD
-        COMMAND cmake -E copy_directory_if_different ${PREBUILD_MONGOCXX_DIR}/bin
-                $<TARGET_PROPERTY:${PROJECT_NAME},RUNTIME_OUTPUT_DIRECTORY_$<UPPER_CASE:$<CONFIG>>>
-        COMMAND cmake -E copy_directory_if_different ${PREBUILD_MONGOCXX_DIR}/lib
-                $<TARGET_PROPERTY:${PROJECT_NAME},ARCHIVE_OUTPUT_DIRECTORY_$<UPPER_CASE:$<CONFIG>>>
-        )
-    install(
-        TARGETS ${PROJECT_NAME}
-        EXPORT ${PROJECT_NAME}_targets
-        RUNTIME_DEPENDENCIES
-        PRE_INCLUDE_REGEXES
-        "mongo*"
-        "bson*"
-        PRE_EXCLUDE_REGEXES
-        "api-ms-"
-        "ext-ms-"
-        POST_EXCLUDE_REGEXES
-        ".*system32/.*\\.dll"
-        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT Runtime
-        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT Development
-        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT Development
-        INCLUDES
-        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
-        PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}
-                      COMPONENT PublicHeader
-        )
-endif()
-
-if(THIS_OS_LINUX)
-    install(
-        TARGETS ${PROJECT_NAME}
-        EXPORT ${PROJECT_NAME}_targets
-        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT Runtime
-        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT Development
-        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT Development
-        INCLUDES
-        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
-        PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}
-                      COMPONENT PublicHeader
-        )
-    install(
-        IMPORTED_RUNTIME_ARTIFACTS mongo::mongocxx_shared mongo::mongoc_shared mongo::bson_shared
-        mongo::bsoncxx_shared
-        )
-endif()
+install(
+    TARGETS ${PROJECT_NAME}
+    EXPORT ${PROJECT_NAME}_targets
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT Runtime
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT Development
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT Development
+    INCLUDES
+    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+    PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME} COMPONENT PublicHeader
+    )
 
 install(
     EXPORT ${PROJECT_NAME}_targets

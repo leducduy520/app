@@ -62,8 +62,6 @@ set(CMAKE_VERBOSE_MAKEFILE OFF)
 set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 
 # Set custom variables
-set(PREBUILD_DIR "${CMAKE_SOURCE_DIR}/prebuild")
-set(PREBUILD_MONGOCXX_DIR "${PREBUILD_DIR}/mongocxx")
 set(PRE_DEFINITION_PATH ${CMAKE_SOURCE_DIR}/app/pre-definition.hpp)
 
 # Set output directory for each configuration
@@ -102,10 +100,6 @@ add_sanitizer_flags()
 if(THIS_OS_LINUX)
     set(CMAKE_INSTALL_RPATH ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR})
 endif(THIS_OS_LINUX)
-
-list(APPEND CMAKE_PREFIX_PATH "${PREBUILD_GAMES_DIR}" "${PREBUILD_SFML_DIR}"
-     "${PREBUILD_MONGOCXX_DIR}"
-     )
 
 fetchlib()
 add_subdirectory(src)

@@ -3,6 +3,7 @@
     "configurePresets": [
         {
             "name": "vcpkg",
+            "hidden": true,
             "binaryDir": "${sourceDir}/build",
             "installDir": "${sourceDir}/install",
             "cacheVariables": {
@@ -11,14 +12,18 @@
         },
         {
             "name": "release",
+            "hidden": true,
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Release"
             }
         },
         {
             "name": "debug",
+            "hidden": true,
             "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "Debug"
+                "CMAKE_BUILD_TYPE": "Debug",
+                "VCPKG_TRACE_FIND_PACKAGE": true,
+                "VCPKG_APPLOCAL_DEPS": true
             }
         }
     ]

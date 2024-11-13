@@ -3,17 +3,17 @@
     "configurePresets": [
         {
             "name": "base",
+            "hidden": true,
             "inherits": [
                 "vcpkg"
             ],
             "cacheVariables": {
-                "X_VCPKG_APPLOCAL_DEPS_INSTALL": true,
-                "VCPKG_TRACE_FIND_PACKAGE": true,
-                "VCPKG_APPLOCAL_DEPS": true
+                "X_VCPKG_APPLOCAL_DEPS_INSTALL": true
             }
         },
         {
             "name": "base-linux",
+            "hidden": true,
             "inherits": [
                 "base"
             ],
@@ -23,16 +23,27 @@
             },
             "cacheVariables": {
                 "CMAKE_GENERATOR": "Ninja"
+            },
+            "condition":{
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Linux"
             }
         },
         {
             "name": "base-windows",
+            "hidden": true,
             "inherits": [
                 "base"
             ],
             "environment": {
                 "VCPKG_ROOT": "C:/vcpkg",
                 "PATH": "$env{VCPKG_ROOT};$penv{PATH}"
+            },
+            "condition":{
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Windows"
             }
         },
         {
@@ -47,7 +58,10 @@
             "inherits": [
                 "base-linux",
                 "release"
-            ]
+            ],
+            "cacheVariables": {
+                "VCPKG_TARGET_TRIPLET": "x64-linux-release"
+            }
         },
         {
             "name": "windows-dbg",
@@ -61,7 +75,10 @@
             "inherits": [
                 "base-windows",
                 "release"
-            ]
+            ],
+            "cacheVariables": {
+                "VCPKG_TARGET_TRIPLET": "x64-windows-release"
+            }
         }
     ]
 }

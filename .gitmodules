@@ -1,4 +1,0 @@
-[submodule "modules/mongo-cxx-driver"]
-	path = modules/mongo-cxx-driver
-	url = https://github.com/mongodb/mongo-cxx-driver.git
-	branch = releases/v3.10

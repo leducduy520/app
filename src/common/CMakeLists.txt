@@ -7,7 +7,12 @@ add_library(${PROJECT_NAME} SHARED ${SOURCE_FILES})
 
 find_package(mongocxx REQUIRED)
 find_package(cpprestsdk REQUIRED)
-target_link_libraries(${PROJECT_NAME} PUBLIC cpprestsdk::cpprest mongo::mongocxx_shared)
+target_link_libraries(
+    ${PROJECT_NAME}
+    PUBLIC
+        cpprestsdk::cpprest
+        $<IF:$<TARGET_EXISTS:mongo::mongocxx_shared>,mongo::mongocxx_shared,mongo::mongocxx_static>
+    )
 
 # target_link_libraries(${PROJECT_NAME} PUBLIC rapidcsv magic_enum nlohmann_json::nlohmann_json)
 

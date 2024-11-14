@@ -1,4 +1,5 @@
 #include "pre-definition.hpp"
+#include "mongo_db_client.hpp"
 
 int main()
 {
@@ -14,6 +15,14 @@ int main()
     std::cout << "Unknown compiler\n";
 #endif
     init();
+    auto *database = DBClient::GetInstance();
+    database->GetDatabase("duyld");
+    if(database->GetCollection("module_app") == nullptr)
+    {
+        database->CreateCollection("module_app");
+        database->InsertDocument(make_document(kvp("history", make_array())));
+    }
+    
     std::string task;
     while (true)
     {

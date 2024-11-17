@@ -4,7 +4,7 @@
 std::unique_ptr<DBClient> DBClient::m_instance;
 std::once_flag DBClient::m_flag;
 
-bsoncxx::stdx::optional<string> get_database_uri()
+bsoncxx::stdx::optional<std::string> get_database_uri()
 {
     const char* database_uri = std::getenv("MONGODB_URI");
     if (database_uri != nullptr)
@@ -14,7 +14,7 @@ bsoncxx::stdx::optional<string> get_database_uri()
     return {};
 }
 
-bsoncxx::stdx::optional<string> get_database_name()
+bsoncxx::stdx::optional<std::string> get_database_name()
 {
     const char* database_name = std::getenv("MONGODB_NAME");
     if (database_name != nullptr)
@@ -24,12 +24,12 @@ bsoncxx::stdx::optional<string> get_database_name()
     return {};
 }
 
-bsoncxx::stdx::optional<string> get_coll_name()
+bsoncxx::stdx::optional<std::string> get_coll_name()
 {
     const char* coll_name = std::getenv("MONGODB_COLL");
     if (coll_name != nullptr)
     {
-        return coll_name;
+        return std::string{coll_name};
     }
     return {};
 }

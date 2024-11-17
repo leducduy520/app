@@ -1,3 +1,4 @@
+#include "mongo_db_client.hpp"
 #include "module_game.hpp"
 #include "game_factory.h"
 #include "thread_pool.hpp"
@@ -11,6 +12,13 @@ ModuleGame::ModuleGame() : ModuleInterface(NAME)
 {
     REGISTAR_GAME(gameA, A);
     REGISTAR_GAME(gameB, B);
+
+    DBINSTANCE->GetDatabase("duyld");
+    if(DBINSTANCE->GetCollection("module_app") == nullptr)
+    {
+        DBINSTANCE->CreateCollection("module_app");
+        DBINSTANCE->InsertDocument(make_document(kvp("history", make_array())));
+    }
 }
 
 void ModuleGame::execute()

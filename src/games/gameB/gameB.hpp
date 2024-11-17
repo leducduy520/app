@@ -1,6 +1,5 @@
 #pragma once
 #include "game_factory.h"
-using namespace std;
 
 class gameB : public IGame
 {

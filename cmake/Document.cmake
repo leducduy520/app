@@ -1,5 +1,5 @@
 function(add_project_documentation)
-    find_package(Doxygen REQUIRED COMPONENTS dot doxygen)
+    find_package(Doxygen QUIET COMPONENTS dot doxygen)
 
     if(NOT Doxygen_FOUND)
         return()

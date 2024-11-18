@@ -12,13 +12,6 @@ ModuleGame::ModuleGame() : ModuleInterface(NAME)
 {
     REGISTAR_GAME(gameA, A);
     REGISTAR_GAME(gameB, B);
-
-    DBINSTANCE->GetDatabase("duyld");
-    if(DBINSTANCE->GetCollection("module_app") == nullptr)
-    {
-        DBINSTANCE->CreateCollection("module_app");
-        DBINSTANCE->InsertDocument(make_document(kvp("history", make_array())));
-    }
 }
 
 void ModuleGame::execute()

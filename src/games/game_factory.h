@@ -5,21 +5,17 @@
 #include <functional>
 #include <iostream>
 
-class GameFactory;
-
-using namespace std;
-
 class GameFactory
 {
 
 public:
-    using CreateGameFunc = function<IGame*(void)>;
+    using CreateGameFunc = std::function<IGame*(void)>;
     IGame* createGame(const std::string& gameId);
     void registerGame(const std::string&, CreateGameFunc createfunc);
     static GameFactory* Instance();
 
 private:
-    unordered_map<string, CreateGameFunc> m_games;
+    std::unordered_map<std::string, CreateGameFunc> m_games;
 };
 
 template <class T>

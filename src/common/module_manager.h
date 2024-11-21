@@ -84,7 +84,7 @@ public:
     static ModuleManager* getInstance();
 
     void genNewSession();
-    long long getSSID() const;
+    int64_t getSSID() const;
 
     // Destructor to ensure all modules are released
     ~ModuleManager();
@@ -97,7 +97,7 @@ private:
     static std::once_flag m_flag;
     std::unordered_map<std::string, std::string> modulePaths;
     std::unordered_map<std::string, LibraryHandle> loadedModuleLibs;
-    long long _SSID;
+    int64_t _SSID;
 };
 
 template <typename T>

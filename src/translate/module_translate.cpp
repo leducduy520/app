@@ -50,8 +50,8 @@ ModuleTranslator::ModuleTranslator() : ModuleInterface(NAME)
 
 void ModuleTranslator::execute()
 {
-    std::locale::global(std::locale("en_US.UTF-8"));
-    std::wcout.imbue(std::locale());
+    // std::locale::global(std::locale("en_US.UTF-8"));
+    // std::wcout.imbue(std::locale());
 
     const char* rapidapi_key = std::getenv("RAPIDAPI_KEY");
     if (rapidapi_key == nullptr)

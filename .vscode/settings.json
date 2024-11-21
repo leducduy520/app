@@ -106,7 +106,8 @@
     "stdfloat": "cpp",
     "cfenv": "cpp",
     "typeindex": "cpp",
-    "csetjmp": "cpp"
+    "csetjmp": "cpp",
+    "rope": "cpp"
   },
   "C_Cpp_Runner.cCompilerPath": "gcc",
   "C_Cpp_Runner.cppCompilerPath": "g++",
@@ -188,5 +189,7 @@
   "cmake.setBuildTypeOnMultiConfig": false,
   "cmake.configureOnEdit": false,
   "cmake.buildBeforeRun": false,
-  "cmake.clearOutputBeforeBuild": false
+  "cmake.clearOutputBeforeBuild": false,
+  "C_Cpp.default.cppStandard": "c++17",
+  "C_Cpp.default.cStandard": "c17"
 }

@@ -56,6 +56,7 @@ int main()
         }
         else if (task == "QUIT")
         {
+            ModuleManager::getInstance()->Factory.release();
             std::cout << "Quit\n";
             break;
         }

@@ -182,7 +182,7 @@ void ModuleManager::genNewSession()
     }
 }
 
-long long ModuleManager::getSSID() const
+int64_t ModuleManager::getSSID() const
 {
     return _SSID;
 }

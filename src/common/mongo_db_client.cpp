@@ -1,6 +1,10 @@
 #include "mongo_db_client.hpp"
 #include <cstdlib>
 
+using bsoncxx::builder::stream::document;
+using bsoncxx::builder::stream::finalize;
+using bsoncxx::stdx::optional;
+
 std::unique_ptr<DBClient> DBClient::m_instance;
 std::once_flag DBClient::m_flag;
 

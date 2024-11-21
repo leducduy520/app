@@ -14,10 +14,6 @@
 using bsoncxx::builder::basic::kvp;
 using bsoncxx::builder::basic::make_array;
 using bsoncxx::builder::basic::make_document;
-using bsoncxx::builder::stream::document;
-using bsoncxx::builder::stream::finalize;
-using bsoncxx::stdx::optional;
-
 
 bsoncxx::stdx::optional<std::string> get_database_uri();
 bsoncxx::stdx::optional<std::string> get_database_name();
@@ -44,7 +40,7 @@ public:
                         const bsoncxx::v_noabi::document::value& update,
                         const mongocxx::v_noabi::options::update& options = mongocxx::v_noabi::options::update(),
                         mongocxx::collection* collection = nullptr);
-    optional<bsoncxx::v_noabi::document::value> GetDocument(const bsoncxx::v_noabi::document::value& filter,
+    bsoncxx::stdx::optional<bsoncxx::v_noabi::document::value> GetDocument(const bsoncxx::v_noabi::document::value& filter,
                                                             mongocxx::collection* collection = nullptr);
     bool DeleteDocument(const bsoncxx::v_noabi::document::value& filter, mongocxx::collection* collection = nullptr);
     void RunPipeLine(const mongocxx::pipeline& pl,

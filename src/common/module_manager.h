@@ -41,7 +41,7 @@ protected:
 public:
     ModuleInterface(std::string moduleName);
 
-    virtual ~ModuleInterface() = default;
+    virtual ~ModuleInterface();
 
     virtual void execute() = 0;
     virtual void shutdown() = 0;
@@ -83,6 +83,9 @@ public:
 
     static ModuleManager* getInstance();
 
+    void genNewSession();
+    long long getSSID() const;
+
     // Destructor to ensure all modules are released
     ~ModuleManager();
     ModuleManager() = default;
@@ -94,6 +97,7 @@ private:
     static std::once_flag m_flag;
     std::unordered_map<std::string, std::string> modulePaths;
     std::unordered_map<std::string, LibraryHandle> loadedModuleLibs;
+    long long _SSID;
 };
 
 template <typename T>

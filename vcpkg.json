@@ -10,6 +10,10 @@
     {
       "name": "cpprestsdk",
       "version": "2.10.17"
+    },
+    {
+      "name": "mongo-cxx-driver",
+      "version": "3.10.2#1"
     }
   ]
 }

@@ -1,9 +1,5 @@
 #include "mongo_db_client.hpp"
 #include "pre-definition.hpp"
-#include <chrono>
-
-using namespace std::chrono;
-using namespace std::chrono_literals;
 
 int main()
 {
@@ -19,14 +15,7 @@ int main()
     std::cout << "Unknown compiler\n";
 #endif
     init();
-    auto sid = 0LL;
-    DBINSTANCE->GetDatabase("duyld");
-    if(DBINSTANCE->GetCollection("module_app") == nullptr)
-    {
-        (void)DBINSTANCE->CreateCollection("module_app");
-        sid = duration_cast<seconds>(system_clock::now().time_since_epoch()).count();
-        DBINSTANCE->InsertDocument(make_document(kvp("history", make_array(make_document(kvp("sid", sid), kvp("module_id", ""))))));
-    }
+    ModuleManager::getInstance()->genNewSession();
     std::string task;
     while (true)
     {

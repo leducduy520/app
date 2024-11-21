@@ -42,6 +42,7 @@ public:
     bool InsertDocument(const bsoncxx::document::value& document, mongocxx::collection* collection = nullptr);
     bool UpdateDocument(const bsoncxx::v_noabi::document::value& filter,
                         const bsoncxx::v_noabi::document::value& update,
+                        const mongocxx::v_noabi::options::update& options = mongocxx::v_noabi::options::update(),
                         mongocxx::collection* collection = nullptr);
     optional<bsoncxx::v_noabi::document::value> GetDocument(const bsoncxx::v_noabi::document::value& filter,
                                                             mongocxx::collection* collection = nullptr);

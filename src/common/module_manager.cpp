@@ -1,4 +1,9 @@
+#include "mongo_db_client.hpp"
 #include "module_manager.h"
+#include <chrono>
+#include <filesystem>
+
+using namespace std::chrono;
 
 std::unique_ptr<ModuleManager> ModuleManager::m_instance = nullptr;
 std::once_flag ModuleManager::m_flag;
@@ -144,19 +149,86 @@ ModuleManager* ModuleManager::getInstance()
     return m_instance.get();
 }
 
+void ModuleManager::genNewSession()
+{
+    DBINSTANCE->GetDatabase("duyld");
+    if(DBINSTANCE->GetCollection("module_app") == nullptr)
+    {
+        (void)DBINSTANCE->CreateCollection("module_app");
+    }
+
+    std::string uid;
+    std::cout << "Please enter the user name: ";
+    std::cin >> uid;
+
+    _SSID = duration_cast<seconds>(system_clock::now().time_since_epoch()).count();
+    auto res = DBINSTANCE->GetDocument(make_document(kvp("uid", uid)));
+    if (res)
+    {
+        std::cout << "User " << uid << " is already exists\n";
+        DBINSTANCE->UpdateDocument(
+            make_document(kvp("uid", uid)),
+            make_document(
+                kvp("$push",
+                    make_document(kvp("history", make_document(kvp("sid", _SSID), kvp("modules", make_array())))))));
+    }
+    else
+    {
+        std::cout << "Add a new user " << uid << '\n';
+        
+        DBINSTANCE->InsertDocument(
+            make_document(kvp("uid", uid),
+                          kvp("history", make_array(make_document(kvp("sid", _SSID), kvp("modules", make_array()))))));
+    }
+}
+
+long long ModuleManager::getSSID() const
+{
+    return _SSID;
+}
+
 ModuleInterface::ModuleInterface(std::string modulename) : m_moduleName(std::move(modulename))
-{}
+{
+    std::cout << "Module " << m_moduleName << '\n';
+    const std::filesystem::path module_path{ModuleManager::getInstance()->getModulePath(m_moduleName)};
+    DBINSTANCE->UpdateDocument(
+        make_document(kvp("history.sid", ModuleManager::getInstance()->getSSID())),
+        make_document(
+            kvp("$push",
+                make_document(
+                    kvp("history.$.modules",
+                        make_document(kvp("module_id", m_moduleName),
+                                      kvp("module_path", module_path.filename().generic_u8string()),
+                                      kvp("module_start", bsoncxx::types::b_date{std::chrono::system_clock::now()}),
+                                      kvp("module_end", "")))))));
+}
+
+ModuleInterface::~ModuleInterface()
+{
+    std::cout << "~Module " << m_moduleName << '\n';
+    mongocxx::v_noabi::options::update udp;
+    udp.array_filters(make_array(make_document(kvp("outer.sid", ModuleManager::getInstance()->getSSID())),
+                                 make_document(kvp("inner.module_id", m_moduleName))));
+    auto current_time = std::chrono::system_clock::now();
+    bsoncxx::types::b_date bson_date{current_time};
+    DBINSTANCE->UpdateDocument(
+        make_document(kvp("history.sid", ModuleManager::getInstance()->getSSID()),
+                      kvp("history.modules.module_id", m_moduleName)),
+        make_document(kvp("$set", make_document(kvp("history.$[outer].modules.$[inner].module_end", bson_date)))),
+        udp);
+}
 
 std::shared_ptr<ModuleInterface> ModuleFactory::createModule(const std::string& moduleName)
 {
     auto fit = m_modules.find(moduleName);
     if (fit != m_modules.end())
     {
-        if(auto search = loadedModuleClasses.find(moduleName); search != loadedModuleClasses.end())
+        if(auto search = loadedModuleClasses.find(moduleName); search == loadedModuleClasses.end())
         {
-            return loadedModuleClasses[moduleName];
+            auto module = fit->second();
+            loadedModuleClasses[moduleName] = module;
         }
-        return fit->second();
+        return loadedModuleClasses[moduleName];
     }
     std::cerr << "Module not registered: " << moduleName << '\n';
     return nullptr;

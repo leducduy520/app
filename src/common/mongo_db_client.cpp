@@ -105,17 +105,18 @@ bool DBClient::InsertDocument(const bsoncxx::document::value& document, mongocxx
 
 bool DBClient::UpdateDocument(const bsoncxx::v_noabi::document::value& filter,
                               const bsoncxx::v_noabi::document::value& update,
+                              const mongocxx::v_noabi::options::update& options,
                               mongocxx::collection* collection)
 {
     if (collection == nullptr)
     {
 
-        m_dbcollection.update_one(filter.view(), update.view());
+        m_dbcollection.update_one(filter.view(), update.view(), options);
         return true;
     }
     if (m_dbdatabase.has_collection(collection->name()))
     {
-        collection->update_one(filter.view(), update.view());
+        collection->update_one(filter.view(), update.view(), options);
         return true;
     }
     return false;

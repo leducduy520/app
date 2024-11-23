@@ -4,6 +4,7 @@
 #define DBINSTANCE DBClient::GetInstance()
 
 #include <bsoncxx/builder/stream/document.hpp>
+#include <bsoncxx/json.hpp>
 #include <mongocxx/client.hpp>
 #include <mongocxx/collection.hpp>
 #include <mongocxx/instance.hpp>
@@ -32,18 +33,19 @@ public:
     DBClient();
     static DBClient* GetInstance();
     static void DestroyInstance();
-    const mongocxx::database* GetDatabase(const char* name);
-    const mongocxx::collection* GetCollection(const char* name);
-    bool CreateCollection(const std::string& collectionName, mongocxx::database* db = nullptr);
+    void GetDatabase(const char* name);
+    void GetCollection(const char* name);
+    void CreateCollection(const std::string& collectionName);
     bool InsertDocument(const bsoncxx::document::value& document, mongocxx::collection* collection = nullptr);
     bool UpdateDocument(const bsoncxx::v_noabi::document::value& filter,
                         const bsoncxx::v_noabi::document::value& update,
                         const mongocxx::v_noabi::options::update& options = mongocxx::v_noabi::options::update(),
                         mongocxx::collection* collection = nullptr);
-    bsoncxx::stdx::optional<bsoncxx::v_noabi::document::value> GetDocument(const bsoncxx::v_noabi::document::value& filter,
-                                                            mongocxx::collection* collection = nullptr);
+    bsoncxx::stdx::optional<bsoncxx::v_noabi::document::value> GetDocument(
+        const bsoncxx::v_noabi::document::value& filter,
+        mongocxx::collection* collection = nullptr);
     bool DeleteDocument(const bsoncxx::v_noabi::document::value& filter, mongocxx::collection* collection = nullptr);
-    void RunPipeLine(const mongocxx::pipeline& pl,
+    mongocxx::v_noabi::cursor RunPipeLine(const mongocxx::pipeline& pl,
                      const mongocxx::options::aggregate& opts,
                      mongocxx::collection* collection = nullptr);
 };

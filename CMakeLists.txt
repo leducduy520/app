@@ -6,7 +6,7 @@ if(NOT DEFINED ENV{VCPKG_ROOT})
     else()
         message(
             FATAL_ERROR "VCPKG_ROOT is not set and vcpkg could not be found in common locations."
-            )
+        )
     endif()
 else()
     set(VCPKG_ROOT "$ENV{VCPKG_ROOT}")
@@ -72,13 +72,13 @@ if(THIS_MULTI_CONFIG)
         string(TOUPPER ${build_type} build_type_upper)
         set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_${build_type_upper}
             ${CMAKE_BINARY_DIR}/${build_type}/lib
-            )
+        )
         set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_${build_type_upper}
             ${CMAKE_BINARY_DIR}/${build_type}/lib
-            )
+        )
         set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_${build_type_upper}
             ${CMAKE_BINARY_DIR}/${build_type}/bin
-            )
+        )
     endforeach()
 endif()
 
@@ -89,7 +89,6 @@ include(Tools)
 include(Document)
 include(Warnings)
 include(Sanitizer)
-include(FetchLib)
 include(RegistModule)
 
 build_clang_format_target("${CMAKE_SOURCE_DIR}/(build|prebuild|tools|.github|modules)/+")
@@ -101,7 +100,6 @@ if(THIS_OS_LINUX)
     set(CMAKE_INSTALL_RPATH ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR})
 endif(THIS_OS_LINUX)
 
-fetchlib()
 add_subdirectory(src)
 add_subdirectory(app)
 write_register_module_lib()

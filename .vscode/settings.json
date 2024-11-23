@@ -107,7 +107,8 @@
     "cfenv": "cpp",
     "typeindex": "cpp",
     "csetjmp": "cpp",
-    "rope": "cpp"
+    "rope": "cpp",
+    "*.ipp": "cpp"
   },
   "C_Cpp_Runner.cCompilerPath": "gcc",
   "C_Cpp_Runner.cppCompilerPath": "g++",
@@ -177,14 +178,13 @@
     "editor.quickSuggestions": {
       "strings": true
     },
-    "editor.defaultFormatter": "cheshirekow.cmake-format",
+    "editor.defaultFormatter": "josetr.cmake-language-support-vscode",
     "editor.formatOnSave": true
   },
   "C_Cpp.codeAnalysis.clangTidy.checks.disabled": [
     "cppcoreguidelines-owning-memory",
     "readability-isolate-declaration"
   ],
-  "cmake.options.statusBarVisibility": "compact",
   "cmake.parallelJobs": 8,
   "cmake.setBuildTypeOnMultiConfig": false,
   "cmake.configureOnEdit": false,

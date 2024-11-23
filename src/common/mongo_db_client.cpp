@@ -59,37 +59,24 @@ DBClient* DBClient::GetInstance()
     return m_instance.get();
 }
 
-const mongocxx::database* DBClient::GetDatabase(const char* name)
+void DBClient::GetDatabase(const char* name)
 {
     m_dbdatabase = m_dbclient[name];
-    return &m_dbdatabase;
 }
 
-const mongocxx::collection* DBClient::GetCollection(const char* name)
+void DBClient::GetCollection(const char* name)
 {
     if (m_dbdatabase.has_collection(name))
     {
         m_dbcollection = m_dbdatabase[name];
-        return &m_dbcollection;
+        return;
     }
-    return nullptr;
+    this->CreateCollection(name);
 }
 
-bool DBClient::CreateCollection(const std::string& collectionName, mongocxx::database* db)
+void DBClient::CreateCollection(const std::string& collectionName)
 {
-    if (db == nullptr)
-    {
-        m_dbcollection = m_dbdatabase.create_collection(collectionName);
-        return true;
-    }
-    auto databases = m_dbclient.list_database_names();
-    if (std::find(databases.begin(), databases.end(), db->name()) != databases.end())
-    {
-        db->create_collection(collectionName);
-        m_dbcollection = db->collection(collectionName);
-        return true;
-    }
-    return false;
+    m_dbcollection = m_dbdatabase.create_collection(collectionName);
 }
 
 bool DBClient::InsertDocument(const bsoncxx::document::value& document, mongocxx::collection* collection)
@@ -158,21 +145,17 @@ bool DBClient::DeleteDocument(const bsoncxx::v_noabi::document::value& filter, m
     return false;
 }
 
-void DBClient::RunPipeLine(const mongocxx::pipeline& pipeline,
+mongocxx::v_noabi::cursor DBClient::RunPipeLine(const mongocxx::pipeline& pipeline,
                            const mongocxx::options::aggregate& opts,
                            mongocxx::collection* collection)
 {
     if (collection == nullptr)
     {
-        auto cursor = m_dbcollection.aggregate(pipeline, opts);
-        auto temp = std::distance(cursor.begin(), cursor.end());
-        return;
+        return m_dbcollection.aggregate(pipeline, opts);
     }
     if (m_dbdatabase.has_collection(collection->name()))
     {
-        auto cursor = collection->aggregate(pipeline, opts);
-        auto temp = std::distance(cursor.begin(), cursor.end());
-        //std::cout << std::distance(cursor.begin(), cursor.end()) << '\n';
+        return collection->aggregate(pipeline, opts);
     }
 }
 

@@ -1,5 +1,6 @@
 #include "mongo_db_client.hpp"
 #include "module_manager.h"
+#include "utilities.hpp"
 #include <chrono>
 #include <filesystem>
 
@@ -12,21 +13,21 @@ std::once_flag ModuleManager::m_flag;
 void ModuleManager::registerModule(const std::string& moduleName, const std::string& modulePath)
 {
     std::cout << "Registering module " << moduleName << " with " << modulePath << '\n';
-    modulePaths[moduleName] = modulePath;
+    m_module_paths[moduleName] = modulePath;
 }
 
 // Load a registered module
 bool ModuleManager::loadModule(const std::string& moduleName)
 {
-    auto pit = modulePaths.find(moduleName);
-    if (pit == modulePaths.end())
+    auto pit = m_module_paths.find(moduleName);
+    if (pit == m_module_paths.end())
     {
         std::cerr << "Module not registered: " << moduleName << '\n';
         return false;
     }
 
-    auto hModuleit = loadedModuleLibs.find(moduleName);
-    if (hModuleit == loadedModuleLibs.end())
+    auto hModuleit = m_module_handle.find(moduleName);
+    if (hModuleit == m_module_handle.end())
     {
         LibraryHandle hModule = LoadLibraryFunction(pit->second.c_str());
         if (hModule == nullptr)
@@ -38,7 +39,7 @@ bool ModuleManager::loadModule(const std::string& moduleName)
 #endif
             return false;
         }
-        loadedModuleLibs[moduleName] = hModule;
+        m_module_handle[moduleName] = hModule;
     }
     std::cout << "Loaded module: " << pit->second << '\n';
     return true;
@@ -47,8 +48,8 @@ bool ModuleManager::loadModule(const std::string& moduleName)
 // Get a function pointer from a loaded module
 FunctionAddress ModuleManager::getModuleMethod(const std::string& moduleName, const std::string& functionName)
 {
-    auto pit = loadedModuleLibs.find(moduleName);
-    if (pit == loadedModuleLibs.end())
+    auto pit = m_module_handle.find(moduleName);
+    if (pit == m_module_handle.end())
     {
         std::cerr << "Module not loaded: " << moduleName << '\n';
         return nullptr;
@@ -66,18 +67,18 @@ FunctionAddress ModuleManager::getModuleMethod(const std::string& moduleName, co
 // Release a loaded module
 void ModuleManager::releaseModuleLib(const std::string& moduleName)
 {
-    if (loadedModuleLibs.empty())
+    if (m_module_handle.empty())
     {
         std::cerr << "No loaded modules\n";
         return;
     }
-    auto pit = loadedModuleLibs.find(moduleName);
-    if (pit != loadedModuleLibs.end())
+    auto pit = m_module_handle.find(moduleName);
+    if (pit != m_module_handle.end())
     {
-        Factory.releaseModule(moduleName);
+        m_factory.releaseModule(moduleName);
         UnloadLibrary(pit->second);
-        loadedModuleLibs.erase(pit);
-        std::cout << "Released module lib: " << modulePaths[moduleName] << '\n';
+        m_module_handle.erase(pit);
+        std::cout << "Released module lib: " << m_module_paths[moduleName] << '\n';
     }
     else
     {
@@ -85,27 +86,27 @@ void ModuleManager::releaseModuleLib(const std::string& moduleName)
     }
 }
 
-void ModuleManager::releaseModuleClass(const std::string& moduleName)
+void ModuleManager::releaseModuleInstance(const std::string& moduleName)
 {
-    this->Factory.releaseModule(moduleName);
+    this->m_factory.releaseModule(moduleName);
 }
 
 // Destructor to ensure all modules are released
 ModuleManager::~ModuleManager()
 {
-    Factory.release();
-    for (const auto& pair : loadedModuleLibs)
+    m_factory.release();
+    for (const auto& pair : m_module_handle)
     {
         UnloadLibrary(pair.second);
     }
-    loadedModuleLibs.clear();
+    m_module_handle.clear();
 }
 
 // Helper function to get the actual path of a loaded module (DLL)
 std::string ModuleManager::getModulePath(const std::string& moduleName)
 {
-    auto pit = loadedModuleLibs.find(moduleName);
-    if (pit == loadedModuleLibs.end())
+    auto pit = m_module_handle.find(moduleName);
+    if (pit == m_module_handle.end())
     {
         std::cerr << "Module lib not loaded: " << moduleName << '\n';
         return "";
@@ -134,10 +135,10 @@ std::string ModuleManager::getModulePath(const std::string& moduleName)
 
 std::shared_ptr<ModuleInterface> ModuleManager::getModuleClass(const std::string& moduleName)
 {
-    auto pit = loadedModuleLibs.find(moduleName);
-    if(pit != loadedModuleLibs.end())
+    auto pit = m_module_handle.find(moduleName);
+    if (pit != m_module_handle.end())
     {
-        return Factory.createModule(moduleName);
+        return m_factory.createModule(moduleName);
     }
     std::cerr << "Module not loaded: " << moduleName << '\n';
     return nullptr;
@@ -152,39 +153,80 @@ ModuleManager* ModuleManager::getInstance()
 void ModuleManager::genNewSession()
 {
     DBINSTANCE->GetDatabase("duyld");
-    if(DBINSTANCE->GetCollection("module_app") == nullptr)
-    {
-        (void)DBINSTANCE->CreateCollection("module_app");
-    }
+    DBINSTANCE->GetCollection("module_app");
 
-    std::string uid;
+    printout_uids();
+
+    std::string uid{};
     std::cout << "Please enter the user name: ";
     std::cin >> uid;
 
-    _SSID = duration_cast<seconds>(system_clock::now().time_since_epoch()).count();
+    m_ssid = duration_cast<seconds>(system_clock::now().time_since_epoch()).count();
     auto res = DBINSTANCE->GetDocument(make_document(kvp("uid", uid)));
     if (res)
     {
+        dld::print_3type_json_str(res.value().view(), true);
         std::cout << "User " << uid << " is already exists\n";
         DBINSTANCE->UpdateDocument(
             make_document(kvp("uid", uid)),
             make_document(
                 kvp("$push",
-                    make_document(kvp("history", make_document(kvp("sid", _SSID), kvp("modules", make_array())))))));
+                    make_document(kvp("history", make_document(kvp("sid", m_ssid), kvp("modules", make_array())))))));
     }
     else
     {
         std::cout << "Add a new user " << uid << '\n';
-        
+
         DBINSTANCE->InsertDocument(
             make_document(kvp("uid", uid),
-                          kvp("history", make_array(make_document(kvp("sid", _SSID), kvp("modules", make_array()))))));
+                          kvp("history", make_array(make_document(kvp("sid", m_ssid), kvp("modules", make_array()))))));
+        printout_uids();
     }
+}
+
+void ModuleManager::printout_uids()
+{
+    try
+    {
+        mongocxx::v_noabi::options::aggregate opts;
+        opts.allow_disk_use(true);
+        opts.max_time(std::chrono::milliseconds{60000});
+
+        mongocxx::v_noabi::pipeline pipeline;
+        pipeline.group(
+            make_document(kvp("_id", bsoncxx::types::b_null{}), kvp("uids", make_document(kvp("$addToSet", "$uid")))));
+        auto cursor = DBINSTANCE->RunPipeLine(pipeline, opts);
+        std::cout << "List of existing user:\n";
+        for (const auto& line : cursor)
+        {
+            nlohmann::json json_obj = dld::to_njson(line);
+#ifndef NDEBUG
+            std::cout << "\n================== Debug start =================\n";
+            std::cout << "Converted nlohmann::json object: \n" << json_obj.dump(2) << '\n';
+            std::cout << "================== Debug end =================\n";
+#endif
+            auto uids = json_obj["uids"].get<std::vector<std::string>>();
+            for (auto& uid : uids)
+            {
+                std::cout << "\t- " << uid << "\n";
+            }
+            std::cout << '\n';
+        }
+    }
+    catch (const std::exception& e)
+    {
+        std::cerr << e.what() << '\n';
+    }
+}
+
+void ModuleManager::endSession()
+{
+    m_factory.release();
 }
 
 int64_t ModuleManager::getSSID() const
 {
-    return _SSID;
+    return m_ssid;
 }
 
 ModuleInterface::ModuleInterface(std::string modulename) : m_moduleName(std::move(modulename))
@@ -193,14 +235,13 @@ ModuleInterface::ModuleInterface(std::string modulename) : m_moduleName(std::mov
     const std::filesystem::path module_path{ModuleManager::getInstance()->getModulePath(m_moduleName)};
     DBINSTANCE->UpdateDocument(
         make_document(kvp("history.sid", ModuleManager::getInstance()->getSSID())),
-        make_document(
-            kvp("$push",
-                make_document(
-                    kvp("history.$.modules",
-                        make_document(kvp("module_id", m_moduleName),
-                                      kvp("module_path", module_path.filename().generic_u8string()),
-                                      kvp("module_start", bsoncxx::types::b_date{std::chrono::system_clock::now()}),
-                                      kvp("module_end", "")))))));
+        make_document(kvp("$push",
+                          make_document(kvp("history.$.modules",
+                                            make_document(kvp("module_id", m_moduleName),
+                                                          kvp("module_path", module_path.filename().generic_u8string()),
+                                                          kvp("module_start",
+                                                              bsoncxx::types::b_date{std::chrono::system_clock::now()}),
+                                                          kvp("module_end", "")))))));
 }
 
 ModuleInterface::~ModuleInterface()
@@ -216,45 +257,4 @@ ModuleInterface::~ModuleInterface()
                       kvp("history.modules.module_id", m_moduleName)),
         make_document(kvp("$set", make_document(kvp("history.$[outer].modules.$[inner].module_end", bson_date)))),
         udp);
-}
-
-std::shared_ptr<ModuleInterface> ModuleFactory::createModule(const std::string& moduleName)
-{
-    auto fit = m_modules.find(moduleName);
-    if (fit != m_modules.end())
-    {
-        if(auto search = loadedModuleClasses.find(moduleName); search == loadedModuleClasses.end())
-        {
-            auto module = fit->second();
-            loadedModuleClasses[moduleName] = module;
-        }
-        return loadedModuleClasses[moduleName];
-    }
-    std::cerr << "Module not registered: " << moduleName << '\n';
-    return nullptr;
-}
-
-void ModuleFactory::registerModule(const std::string& moduleName, std::function<std::shared_ptr<ModuleInterface>(void)> createFunc)
-{
-    m_modules[moduleName] = std::move(createFunc);
-}
-
-void ModuleFactory::releaseModule(const std::string& moduleName)
-{
-    auto fit = loadedModuleClasses.find(moduleName);
-    if (fit!= loadedModuleClasses.end())
-    {
-        fit->second->shutdown();
-        loadedModuleClasses.erase(fit);
-    }
-}
-
-void ModuleFactory::release()
-{
-    for (const auto& pair : loadedModuleClasses)
-    {
-        pair.second->shutdown();
-    }
-    loadedModuleClasses.clear();
-    m_modules.clear();
 }

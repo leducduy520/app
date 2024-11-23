@@ -1,20 +1,14 @@
 #include "mongo_db_client.hpp"
 #include "pre-definition.hpp"
+#include "utilities.hpp"
+#include <boost/predef.h>    // For platform and architecture detection
+#include <boost/version.hpp> // For Boost version
+#include <thread>            // For hardware concurrency
 
 int main()
 {
-#if defined(__clang__)
-    std::cout << "Compiled with Clang\n";
-#elif defined(__GNUC__) || defined(__GNUG__)
-    std::cout << "Compiled with GCC\n";
-#elif defined(_MSC_VER)
-    std::cout << "Compiled with MSVC\n";
-#elif defined(__INTEL_COMPILER)
-    std::cout << "Compiled with Intel Compiler\n";
-#else
-    std::cout << "Unknown compiler\n";
-#endif
     init();
+    INDEBUG(printSystemInfo())
     ModuleManager::getInstance()->genNewSession();
     std::string task;
     while (true)
@@ -43,7 +37,7 @@ int main()
             {
                 std::cout << "Type the name of the module you want to remove: ";
                 std::cin >> moduleid;
-                ModuleManager::getInstance()->releaseModuleClass(moduleid);
+                ModuleManager::getInstance()->releaseModuleInstance(moduleid);
             }
             break;
             default:
@@ -56,8 +50,6 @@ int main()
         }
         else if (task == "QUIT")
         {
-            ModuleManager::getInstance()->Factory.release();
-            std::cout << "Quit\n";
             break;
         }
         else
@@ -65,6 +57,7 @@ int main()
             std::cerr << "Invalid task entered\n";
         }
     }
+    ModuleManager::getInstance()->endSession();
     std::cout << "Program finished\n";
     return 0;
 }
@@ -81,4 +74,61 @@ void ask_for_task(std::string& task)
     }
     std::cin >> task;
     toupper_str(task);
+}
+
+void printSystemInfo()
+{
+
+    std::cout << "===== System Information =====" << std::endl;
+
+    // Operating system
+    std::cout << "Operating System: ";
+#if BOOST_OS_WINDOWS
+    std::cout << "Windows";
+#elif BOOST_OS_LINUX
+    std::cout << "Linux";
+#elif BOOST_OS_MACOS
+    std::cout << "macOS";
+#elif BOOST_OS_UNIX
+    std::cout << "Unix";
+#else
+    std::cout << "Unknown";
+#endif
+    std::cout << std::endl;
+
+    // Architecture
+    std::cout << "Processor Architecture: ";
+#if BOOST_ARCH_X86_64
+    std::cout << "x86_64";
+#elif BOOST_ARCH_ARM
+    std::cout << "ARM";
+#elif BOOST_ARCH_PPC
+    std::cout << "PowerPC";
+#elif BOOST_ARCH_MIPS
+    std::cout << "MIPS";
+#else
+    std::cout << "Unknown";
+#endif
+    std::cout << std::endl;
+
+    // Compiler
+    std::cout << "Compiler: ";
+#if BOOST_COMP_MSVC
+    std::cout << "MSVC";
+#elif BOOST_COMP_GNUC
+    std::cout << "GCC";
+#elif BOOST_COMP_CLANG
+    std::cout << "Clang";
+#else
+    std::cout << "Unknown";
+#endif
+    std::cout << std::endl;
+
+    // Number of CPU cores
+    std::cout << "CPU Cores: " << std::thread::hardware_concurrency() << std::endl;
+
+    // Boost library version
+    std::cout << "Boost Library Version: " << BOOST_LIB_VERSION << std::endl;
+
+    std::cout << "==============================" << std::endl;
 }

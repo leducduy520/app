@@ -8,6 +8,7 @@
 #include <functional>
 #include <mutex>
 #include <future>
+#include <type_traits>
 
 #ifdef _WIN32
 #include <Windows.h>
@@ -31,8 +32,6 @@ typedef void* FunctionAddress;
 #undef max
 #endif
 
-class ModuleFactory;
-
 class ModuleInterface
 {
 protected:
@@ -47,16 +46,58 @@ public:
     virtual void shutdown() = 0;
 };
 
+template <typename key_type = std::string, typename instance_type = void*>
 class ModuleFactory
 {
-    std::unordered_map<std::string, std::function<std::shared_ptr<ModuleInterface>(void)>> m_modules;
-    std::unordered_map<std::string, std::shared_ptr<ModuleInterface>> loadedModuleClasses;
+    std::unordered_map<key_type, std::function<std::shared_ptr<instance_type>(void)>> m_module_constructor;
+    std::unordered_map<key_type, std::shared_ptr<instance_type>> m_module_instance;
 
 public:
-    std::shared_ptr<ModuleInterface> createModule(const std::string& moduleName);
-    void registerModule(const std::string& moduleName, std::function<std::shared_ptr<ModuleInterface>(void)> createFunc);
-    void releaseModule(const std::string& moduleName);
-    void release();
+    std::shared_ptr<instance_type> createModule(const key_type& moduleName)
+    {
+        auto fit = m_module_constructor.find(moduleName);
+        if (fit != m_module_constructor.end())
+        {
+            if (auto search = m_module_instance.find(moduleName); search == m_module_instance.end())
+            {
+                auto module = fit->second();
+                m_module_instance[moduleName] = module;
+            }
+            return m_module_instance[moduleName];
+        }
+        return nullptr;
+    }
+
+    void registerModule(const key_type& moduleName, std::function<std::shared_ptr<instance_type>(void)> createFunc)
+    {
+        m_module_constructor[moduleName] = createFunc;
+    }
+
+    void releaseModule(const key_type& moduleName)
+    {
+        auto search = m_module_instance.find(moduleName);
+        if (search != m_module_instance.end())
+        {
+            if constexpr (std::is_same<instance_type, ModuleInterface>::value)
+            {
+                search->second->shutdown();
+            }
+            m_module_instance.erase(search);
+        }
+    }
+
+    void release()
+    {
+        if constexpr (std::is_same<instance_type, ModuleInterface>::value)
+        {
+            for(auto& instance : m_module_instance)
+            {
+                instance.second->shutdown();
+            }
+        }
+        m_module_instance.clear();
+        m_module_constructor.clear();
+    }
 };
 
 class ModuleManager
@@ -65,6 +106,8 @@ public:
     // Register a module with its expected path
 
     void registerModule(const std::string& moduleName, const std::string& modulePath);
+    template <class T, class Y>
+    void registerModuleConstructor(T&& moduleName, Y&& constructor);
 
     // Load a registered module
     bool loadModule(const std::string& moduleName);
@@ -74,7 +117,7 @@ public:
 
     // Release a loaded module
     void releaseModuleLib(const std::string& moduleName);
-    void releaseModuleClass(const std::string& moduleName);
+    void releaseModuleInstance(const std::string& moduleName);
 
     // Get the actual path of a loaded module
     std::string getModulePath(const std::string& moduleName);
@@ -84,20 +127,23 @@ public:
     static ModuleManager* getInstance();
 
     void genNewSession();
+    void endSession();
     int64_t getSSID() const;
 
     // Destructor to ensure all modules are released
     ~ModuleManager();
     ModuleManager() = default;
 
-    ModuleFactory Factory;
 
 private:
+    int64_t m_ssid;
     static std::unique_ptr<ModuleManager> m_instance;
     static std::once_flag m_flag;
-    std::unordered_map<std::string, std::string> modulePaths;
-    std::unordered_map<std::string, LibraryHandle> loadedModuleLibs;
-    int64_t _SSID;
+    std::unordered_map<std::string, std::string> m_module_paths;
+    std::unordered_map<std::string, LibraryHandle> m_module_handle;
+    ModuleFactory<std::string, ModuleInterface> m_factory;
+    
+    void printout_uids();
 };
 
 template <typename T>
@@ -106,7 +152,7 @@ class ModuleRegistar
 public:
     ModuleRegistar(std::string moduleName)
     {
-        ModuleManager::getInstance()->Factory.registerModule(moduleName, []() -> std::shared_ptr<ModuleInterface> {
+        ModuleManager::getInstance()->registerModuleConstructor(moduleName, []() -> std::shared_ptr<ModuleInterface> {
             return std::make_shared<T>();
         });
     }
@@ -123,4 +169,9 @@ public:
 #define REGISTER_MODULE_CLASS(moduleclass, moduleName)                                                                 \
     static const ModuleRegistar<moduleclass> register##moduleclass(moduleName);
 
+template <class T, class Y>
+inline void ModuleManager::registerModuleConstructor(T&& moduleName, Y&& constructor)
+{
+    ModuleManager::getInstance()->m_factory.registerModule(std::forward<T>(moduleName), std::forward<Y>(constructor));
+}
 #endif // __MODULE_MANAGER_H__

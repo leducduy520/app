@@ -67,6 +67,4 @@ void Calculator::execute()
 }
 
 void Calculator::shutdown()
-{
-    
-}
+{}

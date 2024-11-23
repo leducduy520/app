@@ -9,6 +9,7 @@ class ModuleGame : public ModuleInterface
 public:
 private:
     std::queue<std::future<void>> m_results;
+
 public:
     ModuleGame();
     void execute() override;

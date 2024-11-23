@@ -12,7 +12,7 @@
 #include <locale>
 #include <codecvt>
 #include "module_manager.h"
-#include "magic_enum.hpp"
+#include "magic_enum/magic_enum.hpp"
 
 void init()
 {@register_lib@
@@ -46,5 +46,7 @@ std::string toModuleId(ModuleName e_moduleName)
     tolower_str(str);
     return str;
 }
+
+void printSystemInfo();
 
 void ask_for_task(std::string& task);

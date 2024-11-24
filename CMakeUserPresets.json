@@ -21,9 +21,6 @@
                 "VCPKG_ROOT": "/usr/local/vcpkg",
                 "PATH": "$env{VCPKG_ROOT}:$penv{PATH}"
             },
-            "cacheVariables": {
-                "CMAKE_GENERATOR": "Ninja"
-            },
             "condition":{
                 "type": "equals",
                 "lhs": "${hostSystemName}",

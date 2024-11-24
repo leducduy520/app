@@ -134,7 +134,8 @@ public:
     ~ModuleManager();
     ModuleManager() = default;
 
-
+    friend class ModuleFactory<std::string, ModuleInterface>;
+    friend class ModuleInterface;
 private:
     int64_t m_ssid;
     static std::unique_ptr<ModuleManager> m_instance;

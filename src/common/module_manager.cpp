@@ -165,7 +165,7 @@ void ModuleManager::genNewSession()
     auto res = DBINSTANCE->GetDocument(make_document(kvp("uid", uid)));
     if (res)
     {
-        dld::print_3type_json_str(res.value().view(), true);
+        // dld::print_3type_json_str(res.value().view(), true);
         std::cout << "User " << uid << " is already exists\n";
         DBINSTANCE->UpdateDocument(
             make_document(kvp("uid", uid)),
@@ -232,7 +232,7 @@ int64_t ModuleManager::getSSID() const
 ModuleInterface::ModuleInterface(std::string modulename) : m_moduleName(std::move(modulename))
 {
     std::cout << "Module " << m_moduleName << '\n';
-    const std::filesystem::path module_path{ModuleManager::getInstance()->getModulePath(m_moduleName)};
+    const std::filesystem::path module_path{ModuleManager::getInstance()->m_module_paths[modulename]};
     DBINSTANCE->UpdateDocument(
         make_document(kvp("history.sid", ModuleManager::getInstance()->getSSID())),
         make_document(kvp("$push",

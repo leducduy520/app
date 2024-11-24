@@ -3,6 +3,7 @@
 #include <bsoncxx/document/view_or_value.hpp>
 #include <iostream>
 #include <string>
+#include <functional>
 
 #if !defined(NDEBUG)
     #define INDEBUG(func) func;
@@ -14,6 +15,11 @@
 
 namespace dld
 {
+    inline nlohmann::json to_njson(const std::string &str)
+    {
+        return nlohmann::json::parse(str);
+    }
+    
     inline nlohmann::json to_njson(const bsoncxx::document::view_or_value& value,
                                    bsoncxx::ExtendedJsonMode mode = bsoncxx::ExtendedJsonMode::k_canonical)
     {
@@ -38,6 +44,25 @@ namespace dld
         catch (const std::exception& e)
         {
             std::cerr << e.what() << '\n';
+        }
+    }
+
+    template <typename T, typename Y>
+    void print_in_columns(const T& array, int columns, Y print)
+    {
+        int count = 0;
+        for (const auto& item : array)
+        {
+            print(item);
+            count++;
+            if (count % columns == 0)
+            {
+                std::cout << '\n';
+            }
+        }
+        if (count % columns!= 0)
+        {
+            std::cout << '\n';
         }
     }
 } // namespace dld

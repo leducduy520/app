@@ -61,16 +61,31 @@ void ModuleTranslator::execute()
     m_apiKey = cast_wstring_1(rapidapi_key);
 
     this->get_language_list();
-    auto requestTask = this->do_translate();
 
-    // Wait for all the outstanding I/O to complete and handle any exceptions
-    try
-    {
-        requestTask.wait();
-    }
-    catch (const std::exception& e)
-    {
-        std::cerr << "Error exception:" << e.what() << '\n';
+    while (true) {
+        string_t task{};
+        ucout << "Enter a task you want me to execute: :\n"
+              << "\t- translate: translate the source language to the target language\n"
+              << "\t- language: print available languages\n"
+              << "\t- detect: detect a input language\n"
+              << "\t- exit: quit the program\n";
+        ucin >> task;
+        if (task == U("translate"))
+        {
+            this->do_translate();
+        }
+        else if (task == U("language"))
+        {
+            this->do_print_available_language();
+        }
+        else if (task == U("detect"))
+        {
+            this->do_detect();
+        }
+        else if (task == U("exit"))
+        {
+            break;
+        }
     }
 }
 
@@ -98,27 +113,21 @@ void ModuleTranslator::get_language_list()
                                {
                                    return response.extract_json();
                                }
-                               else
-                               {
-                                   throw std::runtime_error("Failed to get language list");
-                               }
+                               throw std::runtime_error("Failed to get language list");
                            })
                            .then([](json::value response_data) {
                                auto lang_list = response_data["languages"].as_array();
-                               const auto impl = [](web::json::value lang) {
-                                   const string_t sense = lang.at(U("language")).as_string() + U(" (") +
-                                                          lang.at(U("name")).as_string() + U(")");
-                                   ucout << std::left;
-                                   ucout << std::setw(20) << sense;
-                                   return;
-                               };
-                                dld::print_in_columns(lang_list, 5, impl);
-                               return;
+                               std::unordered_map<std::string, std::string> languages;
+                               for (const auto& lang : lang_list)
+                               {
+                                   languages[lang.at(U("language")).as_string()] = lang.at(U("name")).as_string();
+                               }
+                               return languages;
                            });
 
     try
     {
-        requestTask.wait();
+        m_language_map = requestTask.get();
     }
     catch (const std::exception& e)
     {
@@ -128,7 +137,7 @@ void ModuleTranslator::get_language_list()
     // Handle response body arriving.
 }
 
-pplx::task<void> ModuleTranslator::do_translate()
+void ModuleTranslator::do_translate()
 {
     string_t text{};
     string_t source_lang{};
@@ -140,16 +149,11 @@ pplx::task<void> ModuleTranslator::do_translate()
     std::cout << "Enter the target language (e.g , en, vi, fr, de, etc.)\n";
     ucin >> target_lang;
 
-    std::cout << "Enter the string in English you want to translate to Vietnamese:\n";
+    std::cout << "Enter the string in " << m_language_map[source_lang] << " you want to translate to "
+              << m_language_map[target_lang] << ":\n";
     ucin.clear();
     ucin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
     std::getline(ucin, text);
-
-    if (text == U("quit"))
-    {
-        std::cout << "Goodbye!\n";
-        return pplx::task<void>{};
-    }
 
     const uri url(U("https://deep-translate1.p.rapidapi.com/language/translate/v2"));
     http_client client(url);
@@ -165,20 +169,90 @@ pplx::task<void> ModuleTranslator::do_translate()
     request_translate.headers().add(U("x-rapidapi-host"), U("deep-translate1.p.rapidapi.com"));
     request_translate.set_body(request_data);
 
-    return client
-        .request(request_translate)
+    auto requestTask =
+        client
+            .request(request_translate)
 
-        // Handle response headers arriving.
-        .then([=](const http_response& response) {
-            if (response.status_code() == status_codes::OK)
-            {
-                return response.extract_json();
-            }
-            throw std::runtime_error("Request failed with status code " + std::to_string(response.status_code()));
-        })
-        .then([](json::value response_data) {
-            ucout << U("Translation: ") << response_data[U("data")][U("translations")][U("translatedText")].as_string()
-                  << '\n';
-            return;
-        });
+            // Handle response headers arriving.
+            .then([=](const http_response& response) {
+                if (response.status_code() == status_codes::OK)
+                {
+                    return response.extract_json();
+                }
+                throw std::runtime_error("Request failed with status code " + std::to_string(response.status_code()));
+            })
+            .then([](json::value response_data) {
+                ucout << U("Translation: ")
+                      << response_data[U("data")][U("translations")][U("translatedText")].as_string() << '\n';
+                return;
+            });
+
+    try
+    {
+        requestTask.wait();
+    }
+    catch (const std::exception& e)
+    {
+        std::cerr << "Error exception:" << e.what() << '\n';
+    }
+}
+
+void ModuleTranslator::do_detect()
+{
+    string_t text{};
+    std::cout << "Enter the string you want to detect:\n";
+    ucin.clear();
+    ucin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+    std::getline(ucin, text);
+
+    const uri url(U("https://deep-translate1.p.rapidapi.com/language/translate/v2/detect"));
+    http_client client(url);
+
+    json::value request_data;
+    request_data[U("q")] = json::value::string(text);
+
+    http_request request_translate(methods::POST);
+    request_translate.headers().set_content_type(U("application/json"));
+    request_translate.headers().add(U("x-rapidapi-key"), m_apiKey);
+    request_translate.headers().add(U("x-rapidapi-host"), U("deep-translate1.p.rapidapi.com"));
+    request_translate.set_body(request_data);
+
+    auto requestTask =
+        client
+            .request(request_translate)
+
+            // Handle response headers arriving.
+            .then([=](const http_response& response) {
+                if (response.status_code() == status_codes::OK)
+                {
+                    return response.extract_json();
+                }
+                throw std::runtime_error("Request failed with status code " + std::to_string(response.status_code()));
+            })
+            .then([=](json::value response_data) {
+                ucout << U("Detected: ")
+                      << m_language_map[response_data[U("data")][U("detections")][0][U("language")].as_string()] << '\n';
+                return;
+            });
+
+    try
+    {
+        requestTask.wait();
+    }
+    catch (const std::exception& e)
+    {
+        std::cerr << "Error exception:" << e.what() << '\n';
+    }
+}
+
+void ModuleTranslator::do_print_available_language()
+{
+    std::cout << "Available languages:\n";
+    const auto impl = [](std::pair<std::string, std::string> lang_pair) {
+        const string_t sense = lang_pair.first + U(" (") + lang_pair.second + U(")");
+        ucout << std::left;
+        ucout << std::setw(20) << sense;
+        return;
+    };
+    dld::print_in_columns(m_language_map, 5, impl);
 }

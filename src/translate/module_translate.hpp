@@ -2,6 +2,7 @@
 
 #include "module_manager.h"
 #include <cpprest/http_client.h>
+#include <unordered_map>
 
 class ModuleTranslator : public ModuleInterface
 {
@@ -10,7 +11,10 @@ public:
     void execute() override;
     void shutdown() override;
     void get_language_list();
-    pplx::task<void> do_translate();
+    void do_translate();
+    void do_detect();
+    void do_print_available_language();
 private:
     utility::string_t m_apiKey;
+    std::unordered_map<std::string, std::string> m_language_map;
 };

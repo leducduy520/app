@@ -16,5 +16,5 @@ public:
     void do_print_available_language();
 private:
     utility::string_t m_apiKey;
-    std::unordered_map<std::string, std::string> m_language_map;
+    std::unordered_map<utility::string_t, utility::string_t> m_language_map;
 };

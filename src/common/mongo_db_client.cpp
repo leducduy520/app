@@ -4,6 +4,10 @@
 using bsoncxx::builder::stream::document;
 using bsoncxx::builder::stream::finalize;
 using bsoncxx::stdx::optional;
+using bsoncxx::v_noabi::document::value;
+using mongocxx::v_noabi::result::delete_result;
+using mongocxx::v_noabi::result::insert_one;
+using mongocxx::v_noabi::result::update;
 
 std::unique_ptr<DBClient> DBClient::m_instance;
 std::once_flag DBClient::m_flag;
@@ -59,12 +63,12 @@ DBClient* DBClient::GetInstance()
     return m_instance.get();
 }
 
-void DBClient::GetDatabase(const char* name)
+void DBClient::GetDatabase(const std::string& name)
 {
     m_dbdatabase = m_dbclient[name];
 }
 
-void DBClient::GetCollection(const char* name)
+void DBClient::GetCollection(const std::string& name)
 {
     if (m_dbdatabase.has_collection(name))
     {
@@ -79,84 +83,53 @@ void DBClient::CreateCollection(const std::string& collectionName)
     m_dbcollection = m_dbdatabase.create_collection(collectionName);
 }
 
-bool DBClient::InsertDocument(const bsoncxx::document::value& document, mongocxx::collection* collection)
+optional<insert_one> DBClient::InsertDocument(const bsoncxx::document::value& document,
+                                              const std::string& collectionName)
 {
-    if (collection == nullptr)
+    if (!collectionName.empty())
     {
-        m_dbcollection.insert_one(document.view());
-        return true;
+        GetCollection(collectionName);
     }
-    if (m_dbdatabase.has_collection(collection->name()))
-    {
-        collection->insert_one(document.view());
-        return true;
-    }
-    return false;
+    return m_dbcollection.insert_one(document.view());
 }
 
-bool DBClient::UpdateDocument(const bsoncxx::v_noabi::document::value& filter,
-                              const bsoncxx::v_noabi::document::value& update,
-                              const mongocxx::v_noabi::options::update& options,
-                              mongocxx::collection* collection)
+optional<update> DBClient::UpdateDocument(const bsoncxx::v_noabi::document::value& filter,
+                                          const bsoncxx::v_noabi::document::value& update,
+                                          const mongocxx::v_noabi::options::update& options,
+                                          const std::string& collectionName)
 {
-    if (collection == nullptr)
+    if (!collectionName.empty())
     {
-
-        m_dbcollection.update_one(filter.view(), update.view(), options);
-        return true;
+        GetCollection(collectionName);
     }
-    if (m_dbdatabase.has_collection(collection->name()))
-    {
-        collection->update_one(filter.view(), update.view(), options);
-        return true;
-    }
-    return false;
+    return m_dbcollection.update_one(filter.view(), update.view(), options);
 }
 
-optional<bsoncxx::v_noabi::document::value> DBClient::GetDocument(const bsoncxx::v_noabi::document::value& filter,
-                                                                  mongocxx::collection* collection)
+optional<value> DBClient::GetDocument(const bsoncxx::v_noabi::document::value& filter,
+                                      const std::string& collectionName)
 {
-    if (collection == nullptr)
+    if (!collectionName.empty())
     {
-        return m_dbcollection.find_one(filter.view());
+        GetCollection(collectionName);
     }
-    if (m_dbdatabase.has_collection(collection->name()))
-    {
-        return collection->find_one(filter.view());
-    }
-    return {};
+    return m_dbcollection.find_one(filter.view());
 }
 
-bool DBClient::DeleteDocument(const bsoncxx::v_noabi::document::value& filter, mongocxx::collection* collection)
+optional<delete_result> DBClient::DeleteDocument(const bsoncxx::v_noabi::document::value& filter,
+                                                 const std::string& collectionName)
 {
-    if (collection == nullptr)
+    if (!collectionName.empty())
     {
-        auto result = m_dbcollection.delete_one(filter.view());
-        return result.has_value();
+        GetCollection(collectionName);
     }
-    if (m_dbdatabase.has_collection(collection->name()))
-    {
-        auto result = collection->delete_one(filter.view());
-        if (result)
-        {
-            return true;
-        }
-    }
-    return false;
+    return m_dbcollection.delete_one(filter.view());
 }
 
 mongocxx::v_noabi::cursor DBClient::RunPipeLine(const mongocxx::pipeline& pipeline,
-                           const mongocxx::options::aggregate& opts,
-                           mongocxx::collection* collection)
+                                                const mongocxx::options::aggregate& opts,
+                                                const std::string& collectionName)
 {
-    if (collection == nullptr)
-    {
-        return m_dbcollection.aggregate(pipeline, opts);
-    }
-    if (m_dbdatabase.has_collection(collection->name()))
-    {
-        return collection->aggregate(pipeline, opts);
-    }
+    return m_dbcollection.aggregate(pipeline, opts);
 }
 
 // void DBClient::testFunc()

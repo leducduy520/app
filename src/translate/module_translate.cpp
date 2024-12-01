@@ -117,7 +117,7 @@ void ModuleTranslator::get_language_list()
                            })
                            .then([](json::value response_data) {
                                auto lang_list = response_data["languages"].as_array();
-                               std::unordered_map<std::string, std::string> languages;
+                               std::unordered_map<string_t, string_t> languages;
                                for (const auto& lang : lang_list)
                                {
                                    languages[lang.at(U("language")).as_string()] = lang.at(U("name")).as_string();
@@ -149,8 +149,8 @@ void ModuleTranslator::do_translate()
     std::cout << "Enter the target language (e.g , en, vi, fr, de, etc.)\n";
     ucin >> target_lang;
 
-    std::cout << "Enter the string in " << m_language_map[source_lang] << " you want to translate to "
-              << m_language_map[target_lang] << ":\n";
+    ucout << U("Enter the string in ") << m_language_map[source_lang] << U(" you want to translate to ")
+              << m_language_map[target_lang] << U(":\n");
     ucin.clear();
     ucin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
     std::getline(ucin, text);
@@ -248,7 +248,7 @@ void ModuleTranslator::do_detect()
 void ModuleTranslator::do_print_available_language()
 {
     std::cout << "Available languages:\n";
-    const auto impl = [](std::pair<std::string, std::string> lang_pair) {
+    const auto impl = [](std::pair<string_t, string_t> lang_pair) {
         const string_t sense = lang_pair.first + U(" (") + lang_pair.second + U(")");
         ucout << std::left;
         ucout << std::setw(20) << sense;

@@ -9,6 +9,7 @@
 #include <mutex>
 #include <future>
 #include <type_traits>
+#include <optional>
 
 #ifdef _WIN32
 #include <Windows.h>
@@ -128,7 +129,7 @@ public:
 
     void genNewSession();
     void endSession();
-    int64_t getSSID() const;
+    std::optional<int64_t> getSSID() const;
 
     // Destructor to ensure all modules are released
     ~ModuleManager();
@@ -137,7 +138,7 @@ public:
     friend class ModuleFactory<std::string, ModuleInterface>;
     friend class ModuleInterface;
 private:
-    int64_t m_ssid;
+    std::optional<int64_t> m_ssid;
     static std::unique_ptr<ModuleManager> m_instance;
     static std::once_flag m_flag;
     std::unordered_map<std::string, std::string> m_module_paths;

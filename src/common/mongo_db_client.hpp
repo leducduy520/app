@@ -33,21 +33,26 @@ public:
     DBClient();
     static DBClient* GetInstance();
     static void DestroyInstance();
-    void GetDatabase(const char* name);
-    void GetCollection(const char* name);
+    void GetDatabase(const std::string& name);
+    void GetCollection(const std::string& name);
     void CreateCollection(const std::string& collectionName);
-    bool InsertDocument(const bsoncxx::document::value& document, mongocxx::collection* collection = nullptr);
-    bool UpdateDocument(const bsoncxx::v_noabi::document::value& filter,
-                        const bsoncxx::v_noabi::document::value& update,
-                        const mongocxx::v_noabi::options::update& options = mongocxx::v_noabi::options::update(),
-                        mongocxx::collection* collection = nullptr);
+    bsoncxx::stdx::optional<mongocxx::v_noabi::result::insert_one> InsertDocument(
+        const bsoncxx::document::value& document,
+        const std::string& collectionName = {});
+    bsoncxx::stdx::optional<mongocxx::v_noabi::result::update> UpdateDocument(
+        const bsoncxx::v_noabi::document::value& filter,
+        const bsoncxx::v_noabi::document::value& update,
+        const mongocxx::v_noabi::options::update& options = mongocxx::v_noabi::options::update(),
+        const std::string& collectionName = {});
     bsoncxx::stdx::optional<bsoncxx::v_noabi::document::value> GetDocument(
         const bsoncxx::v_noabi::document::value& filter,
-        mongocxx::collection* collection = nullptr);
-    bool DeleteDocument(const bsoncxx::v_noabi::document::value& filter, mongocxx::collection* collection = nullptr);
+        const std::string& collectionName = {});
+    bsoncxx::stdx::optional<mongocxx::v_noabi::result::delete_result> DeleteDocument(
+        const bsoncxx::v_noabi::document::value& filter,
+        const std::string& collectionName = {});
     mongocxx::v_noabi::cursor RunPipeLine(const mongocxx::pipeline& pl,
-                     const mongocxx::options::aggregate& opts,
-                     mongocxx::collection* collection = nullptr);
+                                          const mongocxx::options::aggregate& opts,
+                                          const std::string& collectionName = {});
 };
 
 #endif /*  __DBCLIENT_GAME__ */

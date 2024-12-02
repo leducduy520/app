@@ -154,8 +154,8 @@ void ModuleManager::genNewSession()
 {
     try
     {
-        DBINSTANCE->GetDatabase("duyld");
-        DBINSTANCE->GetCollection("module_app");
+        DBINSTANCE->GetDatabase(dld::get_database_name().value_or("guest"));
+        DBINSTANCE->GetCollection(dld::get_database_collection_name().value_or("guest"));
 
         printout_uids();
     }

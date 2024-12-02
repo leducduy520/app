@@ -1,5 +1,5 @@
 #include "mongo_db_client.hpp"
-#include <cstdlib>
+#include "utilities.hpp"
 
 using bsoncxx::builder::stream::document;
 using bsoncxx::builder::stream::finalize;
@@ -12,42 +12,13 @@ using mongocxx::v_noabi::result::update;
 std::unique_ptr<DBClient> DBClient::m_instance;
 std::once_flag DBClient::m_flag;
 
-bsoncxx::stdx::optional<std::string> get_database_uri()
-{
-    const char* database_uri = std::getenv("MONGODB_URI");
-    if (database_uri != nullptr)
-    {
-        return database_uri;
-    }
-    return {};
-}
-
-bsoncxx::stdx::optional<std::string> get_database_name()
-{
-    const char* database_name = std::getenv("MONGODB_NAME");
-    if (database_name != nullptr)
-    {
-        return database_name;
-    }
-    return {};
-}
-
-bsoncxx::stdx::optional<std::string> get_coll_name()
-{
-    const char* coll_name = std::getenv("MONGODB_COLL");
-    if (coll_name != nullptr)
-    {
-        return std::string{coll_name};
-    }
-    return {};
-}
-
 DBClient::DBClient()
 {
-    auto str_uri = get_database_uri();
-    if (str_uri)
+    auto str_uri = dld::get_database_uri();
+    if (str_uri.has_value())
     {
-        const auto uri = mongocxx::uri{str_uri.value().c_str()};
+        INDEBUG(std::cout << "mongodb uri: " << str_uri.value() << '\n')
+        const auto uri = mongocxx::v_noabi::uri{str_uri.value().c_str()};
         mongocxx::options::client client_options;
         const auto api = mongocxx::options::server_api{mongocxx::options::server_api::version::k_version_1};
         client_options.server_api_opts(api);

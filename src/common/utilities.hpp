@@ -1,9 +1,12 @@
+#ifndef __DLD_UTILS__
+#define __DLD_UTILS__
 #include <bsoncxx/json.hpp>
 #include <nlohmann/json.hpp>
 #include <bsoncxx/document/view_or_value.hpp>
 #include <iostream>
 #include <string>
 #include <functional>
+#include <cstdlib>
 
 #if !defined(NDEBUG)
     #define INDEBUG(func) func;
@@ -48,7 +51,7 @@ namespace dld
     }
 
     template <typename T, typename Y>
-    void print_in_columns(const T& array, int columns, Y print)
+    inline void print_in_columns(const T& array, int columns, Y print)
     {
         int count = 0;
         for (const auto& item : array)
@@ -65,4 +68,32 @@ namespace dld
             std::cout << '\n';
         }
     }
+    inline bsoncxx::stdx::optional<std::string> get_database_collection_name()
+    {
+        const char* coll_name = std::getenv("MONGODB_COLL");
+        if (coll_name != nullptr)
+        {
+            return std::string{coll_name};
+        }
+        return {};
+    }
+    inline bsoncxx::stdx::optional<std::string> get_database_name()
+    {
+        const char* database_name = std::getenv("MONGODB_NAME");
+        if (database_name != nullptr)
+        {
+            return database_name;
+        }
+        return {};
+    }
+    inline bsoncxx::stdx::optional<std::string> get_database_uri()
+    {
+        const char* database_uri = std::getenv("MONGODB_URI");
+        if (database_uri != nullptr)
+        {
+            return database_uri;
+        }
+        return {};
+    }
 } // namespace dld
+#endif

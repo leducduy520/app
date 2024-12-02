@@ -16,14 +16,10 @@ using bsoncxx::builder::basic::kvp;
 using bsoncxx::builder::basic::make_array;
 using bsoncxx::builder::basic::make_document;
 
-bsoncxx::stdx::optional<std::string> get_database_uri();
-bsoncxx::stdx::optional<std::string> get_database_name();
-bsoncxx::stdx::optional<std::string> get_coll_name();
-
 class DBClient
 {
     mongocxx::client m_dbclient;
-    mongocxx::instance m_dbinstance;
+    const mongocxx::instance m_dbinstance;
     mongocxx::database m_dbdatabase;
     mongocxx::collection m_dbcollection;
     static std::unique_ptr<DBClient> m_instance;

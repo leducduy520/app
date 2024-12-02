@@ -116,7 +116,7 @@ void ModuleTranslator::get_language_list()
                                throw std::runtime_error("Failed to get language list");
                            })
                            .then([](json::value response_data) {
-                               auto lang_list = response_data["languages"].as_array();
+                               auto lang_list = response_data[U("languages")].as_array();
                                std::unordered_map<string_t, string_t> languages;
                                for (const auto& lang : lang_list)
                                {

@@ -11,6 +11,7 @@
 #include <mutex>
 #include <string>
 #include <memory>
+#include <filesystem>
 
 using bsoncxx::builder::basic::kvp;
 using bsoncxx::builder::basic::make_array;
@@ -18,14 +19,15 @@ using bsoncxx::builder::basic::make_document;
 
 class DBClient
 {
-    mongocxx::client m_dbclient;
     const mongocxx::instance m_dbinstance;
+    mongocxx::client m_dbclient;
     mongocxx::database m_dbdatabase;
     mongocxx::collection m_dbcollection;
     static std::unique_ptr<DBClient> m_instance;
     static std::once_flag m_flag;
 
 public:
+    static std::filesystem::path m_ca_path;
     DBClient();
     static DBClient* GetInstance();
     static void DestroyInstance();

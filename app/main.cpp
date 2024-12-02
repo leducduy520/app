@@ -5,10 +5,51 @@
 #include <boost/version.hpp> // For Boost version
 #include <thread>            // For hardware concurrency
 
-int main()
+int main(int argc, char* argv[])
 {
     init();
     INDEBUG(printSystemInfo())
+    // Parse command-line arguments
+    for (int i = 1; i < argc; ++i)
+    {
+        std::string arg = argv[i];
+        if (arg == "--cert")
+        {
+            if (i + 1 < argc)
+            { // Ensure a value follows the --cert option
+                DBClient::m_ca_path.assign(argv[i + 1]);
+                ++i; // Skip the next argument as it's the value of --cert
+            }
+            else
+            {
+                std::cerr << "Error: Missing value for --cert option.\n";
+                return 1;
+            }
+        }
+        else
+        {
+            std::cerr << "Warning: Unrecognized option " << arg << ".\n";
+        }
+    }
+
+    // Check if the --cert option was provided
+    if (!DBClient::m_ca_path.empty())
+    {
+        if (std::filesystem::exists(DBClient::m_ca_path))
+        {
+            std::cout << "Certificate file provided: " << DBClient::m_ca_path.c_str() << "\n";
+        }
+        else
+        {
+            std::cerr << "Error: Certificate file not found at " << DBClient::m_ca_path.c_str() << "\n";
+            return 1;
+        }
+    }
+    else
+    {
+        std::cout << "No certificate file provided. Proceeding without it.\n";
+    }
+
     ModuleManager::getInstance()->genNewSession();
     std::string task;
     while (true)

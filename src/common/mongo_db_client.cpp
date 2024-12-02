@@ -11,6 +11,7 @@ using mongocxx::v_noabi::result::update;
 
 std::unique_ptr<DBClient> DBClient::m_instance;
 std::once_flag DBClient::m_flag;
+std::filesystem::path DBClient::m_ca_path;
 
 DBClient::DBClient()
 {
@@ -18,10 +19,30 @@ DBClient::DBClient()
     if (str_uri.has_value())
     {
         INDEBUG(std::cout << "mongodb uri: " << str_uri.value() << '\n')
-        const auto uri = mongocxx::v_noabi::uri{str_uri.value().c_str()};
+
+        // Define the MongoDB URI
+        const mongocxx::uri uri{str_uri.value().c_str()};
+
+        // Set up client options
         mongocxx::options::client client_options;
-        const auto api = mongocxx::options::server_api{mongocxx::options::server_api::version::k_version_1};
-        client_options.server_api_opts(api);
+
+        if (!m_ca_path.empty())
+        {
+            // Configure TLS/SSL options
+            mongocxx::options::tls tls_options;
+
+            // Provide the single PEM file (client certificate and private key combined)
+            tls_options.pem_file(m_ca_path.c_str()); // Replace with the path to your .pem file
+
+            // Apply TLS options to client options
+            client_options.tls_opts(tls_options);
+        }
+
+        // Optionally configure Server API version (MongoDB 5.x+)
+        client_options.server_api_opts(
+            mongocxx::options::server_api{mongocxx::options::server_api::version::k_version_1});
+
+        // Create the client with URI and options
         m_dbclient = std::move(mongocxx::client{uri, client_options});
         return;
     }

@@ -127,9 +127,7 @@ public:
 
     static ModuleManager* getInstance();
 
-    void genNewSession();
     void endSession();
-    std::optional<int64_t> getSSID() const;
 
     // Destructor to ensure all modules are released
     ~ModuleManager();
@@ -138,14 +136,11 @@ public:
     friend class ModuleFactory<std::string, ModuleInterface>;
     friend class ModuleInterface;
 private:
-    std::optional<int64_t> m_ssid;
     static std::unique_ptr<ModuleManager> m_instance;
     static std::once_flag m_flag;
     std::unordered_map<std::string, std::string> m_module_paths;
     std::unordered_map<std::string, LibraryHandle> m_module_handle;
     ModuleFactory<std::string, ModuleInterface> m_factory;
-    
-    void printout_uids();
 };
 
 template <typename T>

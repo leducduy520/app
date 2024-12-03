@@ -1,19 +1,8 @@
-#include <filesystem>
-#ifdef _WIN32
-#include <Windows.h>
-#else
-#include <linux/limits.h>
-#include <unistd.h>
-#endif
 
-#include <iostream>
-#include <memory>
 #include <cstdint>
-#include <locale>
-#include <codecvt>
-#include "module_manager.h"
-#include "magic_enum/magic_enum.hpp"
 
+#include "magic_enum/magic_enum.hpp"
+#include "module_manager.h"
 void init()
 {@register_lib@
 }
@@ -23,30 +12,3 @@ enum class ModuleName : uint8_t
 @register_enum@,
     REMOVE
 };
-
-void toupper_str(std::string& str)
-{
-    for (auto& cha : str)
-    {
-        cha = static_cast<char>(toupper(cha));
-    }
-}
-
-void tolower_str(std::string& str)
-{
-    for (auto& cha : str)
-    {
-        cha = static_cast<char>(tolower(cha));
-    }
-}
-
-std::string toModuleId(ModuleName e_moduleName)
-{
-    auto str = std::string(magic_enum::enum_name(e_moduleName));
-    tolower_str(str);
-    return str;
-}
-
-void printSystemInfo();
-
-void ask_for_task(std::string& task);

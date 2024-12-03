@@ -27,8 +27,7 @@ class DBClient
     static std::once_flag m_flag;
 
 public:
-    static std::filesystem::path m_ca_path;
-    DBClient();
+    void Connect(std::string db_uri = {}, const std::string& ca_path = {});
     static DBClient* GetInstance();
     static void DestroyInstance();
     void GetDatabase(const std::string& name);

@@ -1,5 +1,4 @@
-#include "mongo_db_client.hpp"
-#include "pre-definition.hpp"
+#include "main.hpp"
 #include "utilities.hpp"
 #include <boost/predef.h>    // For platform and architecture detection
 #include <boost/version.hpp> // For Boost version
@@ -9,39 +8,26 @@ int main(int argc, char* argv[])
 {
     init();
     INDEBUG(printSystemInfo())
-    // Parse command-line arguments
-    for (int i = 1; i < argc; ++i)
-    {
-        std::string arg = argv[i];
-        if (arg == "--cert")
-        {
-            if (i + 1 < argc)
-            { // Ensure a value follows the --cert option
-                DBClient::m_ca_path.assign(argv[i + 1]);
-                ++i; // Skip the next argument as it's the value of --cert
-            }
-            else
-            {
-                std::cerr << "Error: Missing value for --cert option.\n";
-                return 1;
-            }
-        }
-        else
-        {
-            std::cerr << "Warning: Unrecognized option " << arg << ".\n";
-        }
-    }
 
-    // Check if the --cert option was provided
-    if (!DBClient::m_ca_path.empty())
+    //Declare variables for parsing
+    std::optional<std::string> ca_path;
+    std::optional<std::string> db_uri;
+    std::optional<std::string> db_name;
+    std::optional<std::string> db_coll_name;
+
+    // Parse the command-line arguments
+    auto options = parse_arguments(argc, argv);
+    // Check and process the --cert option
+    if (options.find("--cert") != options.end())
     {
-        if (std::filesystem::exists(DBClient::m_ca_path))
+        ca_path = options["--cert"];
+        if (std::filesystem::exists(ca_path.value()))
         {
-            std::cout << "Certificate file provided: " << DBClient::m_ca_path.c_str() << "\n";
+            std::cout << "Certificate file provided: " << ca_path.value() << "\n";
         }
         else
         {
-            std::cerr << "Error: Certificate file not found at " << DBClient::m_ca_path.c_str() << "\n";
+            std::cerr << "Error: Certificate file not found at " << ca_path.value() << "\n";
             return 1;
         }
     }
@@ -50,7 +36,53 @@ int main(int argc, char* argv[])
         std::cout << "No certificate file provided. Proceeding without it.\n";
     }
 
-    ModuleManager::getInstance()->genNewSession();
+    // Check and process the --db-uri option
+    if (options.find("--db-uri") != options.end())
+    {
+        db_uri = options["--db-uri"];
+        std::cout << "Database uri provided\n";
+    }
+    else
+    {
+        std::cout << "No database uri provided. Proceeding without database uri.\n";
+    }
+
+    // Check and process the --db-name option
+    if (options.find("--db-name") != options.end())
+    {
+        db_name = options["--db-name"];
+        std::cout << "Database name provided: " << db_name.value() << "\n";
+    }
+    else
+    {
+        std::cout << "No database name provided. Proceeding without database name.\n";
+    }
+
+    // Check and process the --db-coll-name option
+    if (options.find("--db-coll-name") != options.end())
+    {
+        db_coll_name = options["--db-coll-name"];
+        std::cout << "Collection name provided: " << db_coll_name.value() << "\n";
+    }
+    else
+    {
+        std::cout << "No collection name provided. Proceeding without collection name.\n";
+    }
+
+    try
+    {
+        // Connect to the database
+        DBINSTANCE->Connect(db_uri.value_or(dld::get_database_uri().value_or("")), ca_path.value_or(""));
+    }
+    catch (const std::exception& e)
+    {
+        std::cerr << "Exception: " << e.what() << '\n';
+        return 1;
+    }
+
+    genNewSession(db_name.has_value() ? db_name : dld::get_database_name(),
+                  db_coll_name.has_value() ? db_coll_name : dld::get_database_collection_name());
+
     std::string task;
     while (true)
     {
@@ -86,7 +118,9 @@ int main(int argc, char* argv[])
             }
             if (auto minterface = winterface.lock())
             {
+                start_module_execution(moduleid);
                 minterface->execute();
+                end_module_execution(moduleid);
             }
         }
         else if (task == "QUIT")
@@ -117,10 +151,152 @@ void ask_for_task(std::string& task)
     toupper_str(task);
 }
 
+std::unordered_map<std::string, std::string> parse_arguments(int argc, char* argv[])
+{
+    std::unordered_map<std::string, std::string> options;
+
+    for (int i = 1; i < argc; ++i)
+    {
+        const std::string arg = argv[i];
+        if (arg == "--cert" || arg == "--db-uri" || arg == "--db-name" || arg == "--db-coll-name")
+        {
+            if (i + 1 < argc)
+            {
+                options[arg] = argv[i + 1];
+                ++i; // Skip the next argument since it's the value of this option
+            }
+            else
+            {
+                std::cerr << "Error: Missing value for option " << arg << ".\n";
+                exit(1);
+            }
+        }
+        else
+        {
+            std::cerr << "Warning: Unrecognized option " << arg << ".\n";
+        }
+    }
+
+    return options;
+}
+
+void printout_uids()
+{
+    try
+    {
+        mongocxx::v_noabi::options::aggregate opts;
+        opts.allow_disk_use(true);
+        opts.max_time(std::chrono::milliseconds{60000});
+
+        mongocxx::v_noabi::pipeline pipeline;
+        pipeline.group(
+            make_document(kvp("_id", bsoncxx::types::b_null{}), kvp("uids", make_document(kvp("$addToSet", "$_id")))));
+        auto cursor = DBINSTANCE->RunPipeLine(pipeline, opts);
+        std::cout << "List of existing user:\n";
+        for (const auto& line : cursor)
+        {
+            nlohmann::json json_obj = dld::to_njson(line);
+            auto uids = json_obj["uids"].get<std::vector<std::string>>();
+            for (auto& uid : uids)
+            {
+                std::cout << "\t- " << uid << "\n";
+            }
+            std::cout << '\n';
+#ifndef NDEBUG
+            std::cout << "\n================== Debug start =================\n";
+            std::cout << "Converted nlohmann::json object: \n" << json_obj.dump(2) << '\n';
+            std::cout << "================== Debug end =================\n";
+#endif
+        }
+
+#ifndef NDEBUG
+        pipeline = mongocxx::v_noabi::pipeline{};
+        pipeline.unwind("$history")
+            .unwind("$history.modules")
+            .group(make_document(kvp("_id", "$history.modules.module_id"), kvp("count", make_document(kvp("$sum", 1)))))
+            .sort(make_document(kvp("count", -1)))
+            .limit(1);
+        {
+            auto cursor = DBINSTANCE->RunPipeLine(pipeline, opts);
+            std::cout << "Top most frequently used modules:\n";
+            for (const auto& line : cursor)
+            {
+                nlohmann::json json_obj = dld::to_njson(line);
+                std::cout << json_obj["_id"].get<std::string>() << '\n';
+            }
+        }
+#endif
+    }
+    catch (const std::exception& e)
+    {
+        std::cerr << e.what() << '\n';
+    }
+}
+
+void genNewSession(const std::optional<std::string>& db_name, const std::optional<std::string>& db_coll_name)
+{
+    DBINSTANCE->GetDatabase(db_name.value_or("guest"));
+    DBINSTANCE->GetCollection(db_coll_name.value_or("guest"));
+
+    printout_uids();
+
+    std::cout << "Please enter the user name: ";
+    std::cin >> uid;
+
+    auto res = DBINSTANCE->GetDocument(make_document(kvp("_id", uid)));
+    if (res)
+    {
+        // dld::print_3type_json_str(res.value().view(), true);
+        std::cout << "User " << uid << " is already exists\n";
+        DBINSTANCE->UpdateDocument(
+            make_document(kvp("_id", uid)),
+            make_document(
+                kvp("$push",
+                    make_document(kvp("history", make_document(kvp("sid", ssid), kvp("modules", make_array())))))));
+    }
+    else
+    {
+        std::cout << "Add a new user " << uid << '\n';
+
+        DBINSTANCE->InsertDocument(
+            make_document(kvp("_id", uid),
+                          kvp("history", make_array(make_document(kvp("sid", ssid), kvp("modules", make_array()))))));
+        printout_uids();
+    }
+}
+
+void start_module_execution(const std::string & module_name)
+{
+    const std::string module_path = ModuleManager::getInstance()->getModulePath(module_name);
+    DBINSTANCE->UpdateDocument(
+        make_document(kvp("_id", uid), kvp("history.sid", ssid)),
+        make_document(kvp("$push",
+                          make_document(kvp("history.$.modules",
+                                            make_document(kvp("module_id", module_name),
+                                                          kvp("module_path", module_path),
+                                                          kvp("execution_start",
+                                                              bsoncxx::types::b_date{std::chrono::system_clock::now()}),
+                                                          kvp("execution_end", "")))))));
+}
+
+void end_module_execution(const std::string& module_name)
+{
+    mongocxx::v_noabi::options::update udp;
+    udp.array_filters(make_array(make_document(kvp("outer.sid", ssid)),
+                                 make_document(kvp("inner.module_id", module_name))));
+    auto current_time = std::chrono::system_clock::now();
+    bsoncxx::types::b_date bson_date{current_time};
+    DBINSTANCE->UpdateDocument(
+        make_document(kvp("_id", uid),
+                      kvp("history.modules.module_id", module_name)),
+        make_document(kvp("$set", make_document(kvp("history.$[outer].modules.$[inner].execution_end", bson_date)))),
+        udp);
+}
+
 void printSystemInfo()
 {
 
-    std::cout << "===== System Information =====" << std::endl;
+    std::cout << "===== System Information =====\n";
 
     // Operating system
     std::cout << "Operating System: ";
@@ -135,7 +311,7 @@ void printSystemInfo()
 #else
     std::cout << "Unknown";
 #endif
-    std::cout << std::endl;
+    std::cout << '\n';
 
     // Architecture
     std::cout << "Processor Architecture: ";
@@ -150,7 +326,7 @@ void printSystemInfo()
 #else
     std::cout << "Unknown";
 #endif
-    std::cout << std::endl;
+    std::cout << '\n';
 
     // Compiler
     std::cout << "Compiler: ";
@@ -163,13 +339,13 @@ void printSystemInfo()
 #else
     std::cout << "Unknown";
 #endif
-    std::cout << std::endl;
+    std::cout << '\n';
 
     // Number of CPU cores
-    std::cout << "CPU Cores: " << std::thread::hardware_concurrency() << std::endl;
+    std::cout << "CPU Cores: " << std::thread::hardware_concurrency() << '\n';
 
     // Boost library version
-    std::cout << "Boost Library Version: " << BOOST_LIB_VERSION << std::endl;
+    std::cout << "Boost Library Version: " << BOOST_LIB_VERSION << '\n';
 
-    std::cout << "==============================" << std::endl;
+    std::cout << "==============================\n";
 }

@@ -4,31 +4,28 @@
 #include <boost/version.hpp> // For Boost version
 #include <thread>            // For hardware concurrency
 
-int main(int argc, char* argv[])
+struct MongoData
 {
-    init();
-    INDEBUG(printSystemInfo())
-
-    //Declare variables for parsing
     std::optional<std::string> ca_path;
     std::optional<std::string> db_uri;
     std::optional<std::string> db_name;
     std::optional<std::string> db_coll_name;
+};
 
-    // Parse the command-line arguments
-    auto options = parse_arguments(argc, argv);
+bool parse_mongo_data(MongoData& data, std::unordered_map<std::string, std::string>& options)
+{
     // Check and process the --cert option
     if (options.find("--cert") != options.end())
     {
-        ca_path = options["--cert"];
-        if (std::filesystem::exists(ca_path.value()))
+        data.ca_path = options["--cert"];
+        if (std::filesystem::exists(data.ca_path.value()))
         {
-            std::cout << "Certificate file provided: " << ca_path.value() << "\n";
+            std::cout << "Certificate file provided: " << data.ca_path.value() << "\n";
         }
         else
         {
-            std::cerr << "Error: Certificate file not found at " << ca_path.value() << "\n";
-            return 1;
+            std::cerr << "Error: Certificate file not found at " << data.ca_path.value() << "\n";
+            return false;
         }
     }
     else
@@ -39,7 +36,7 @@ int main(int argc, char* argv[])
     // Check and process the --db-uri option
     if (options.find("--db-uri") != options.end())
     {
-        db_uri = options["--db-uri"];
+        data.db_uri = options["--db-uri"];
         std::cout << "Database uri provided\n";
     }
     else
@@ -50,8 +47,8 @@ int main(int argc, char* argv[])
     // Check and process the --db-name option
     if (options.find("--db-name") != options.end())
     {
-        db_name = options["--db-name"];
-        std::cout << "Database name provided: " << db_name.value() << "\n";
+        data.db_name = options["--db-name"];
+        std::cout << "Database name provided: " << data.db_name.value() << "\n";
     }
     else
     {
@@ -61,18 +58,33 @@ int main(int argc, char* argv[])
     // Check and process the --db-coll-name option
     if (options.find("--db-coll-name") != options.end())
     {
-        db_coll_name = options["--db-coll-name"];
-        std::cout << "Collection name provided: " << db_coll_name.value() << "\n";
+        data.db_coll_name = options["--db-coll-name"];
+        std::cout << "Collection name provided: " << data.db_coll_name.value() << "\n";
     }
     else
     {
         std::cout << "No collection name provided. Proceeding without collection name.\n";
     }
+    return true;
+}
+
+int main(int argc, char* argv[])
+{
+    init();
+    INDEBUG(printSystemInfo())
+
+    // Parse command line arguments
+    auto options = parse_arguments(argc, argv);
+
+    // Parse MongoDB data
+    MongoData data;
+    parse_mongo_data(data, options);
+
 
     try
     {
         // Connect to the database
-        DBINSTANCE->Connect(db_uri.value_or(dld::get_database_uri().value_or("")), ca_path.value_or(""));
+        DBINSTANCE->Connect(data.db_uri.value_or(dld::get_database_uri().value_or("")), data.ca_path.value_or(""));
     }
     catch (const std::exception& e)
     {
@@ -80,8 +92,8 @@ int main(int argc, char* argv[])
         return 1;
     }
 
-    genNewSession(db_name.has_value() ? db_name : dld::get_database_name(),
-                  db_coll_name.has_value() ? db_coll_name : dld::get_database_collection_name());
+    genNewSession(data.db_name.has_value() ? data.db_name : dld::get_database_name(),
+                  data.db_coll_name.has_value() ? data.db_coll_name : dld::get_database_collection_name());
 
     std::string task;
     while (true)
@@ -265,7 +277,7 @@ void genNewSession(const std::optional<std::string>& db_name, const std::optiona
     }
 }
 
-void start_module_execution(const std::string & module_name)
+void start_module_execution(const std::string& module_name)
 {
     const std::string module_path = ModuleManager::getInstance()->getModulePath(module_name);
     DBINSTANCE->UpdateDocument(
@@ -282,13 +294,12 @@ void start_module_execution(const std::string & module_name)
 void end_module_execution(const std::string& module_name)
 {
     mongocxx::v_noabi::options::update udp;
-    udp.array_filters(make_array(make_document(kvp("outer.sid", ssid)),
-                                 make_document(kvp("inner.module_id", module_name))));
+    udp.array_filters(
+        make_array(make_document(kvp("outer.sid", ssid)), make_document(kvp("inner.module_id", module_name))));
     auto current_time = std::chrono::system_clock::now();
     bsoncxx::types::b_date bson_date{current_time};
     DBINSTANCE->UpdateDocument(
-        make_document(kvp("_id", uid),
-                      kvp("history.modules.module_id", module_name)),
+        make_document(kvp("_id", uid), kvp("history.modules.module_id", module_name)),
         make_document(kvp("$set", make_document(kvp("history.$[outer].modules.$[inner].execution_end", bson_date)))),
         udp);
 }

@@ -4,7 +4,7 @@ FROM ubuntu:latest AS dependencies
 # Install essential build tools and utilities
 RUN apt-get update && apt-get install -y \
     build-essential cmake git doxygen python3 python3-pip ninja-build \
-    graphviz pkg-config dos2unix cmake-format libssl-dev clang-tidy \
+    graphviz pkg-config dos2unix cmake-format libssl-dev clang-tidy clang-format \
     curl zip unzip tar && \
     rm -rf /var/lib/apt/lists/*
 

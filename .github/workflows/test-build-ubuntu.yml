@@ -1,0 +1,38 @@
+name: Test build project
+on:
+  push:
+    branches: ["main", "dev_workflow"]
+jobs:
+  Build-Ubuntu:
+    runs-on: ubuntu-latest
+    container:
+      image: duyleduc520/module_app:latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+      - name: Restore Build Cache
+        uses: actions/cache@v3
+        with:
+          path: build/ # Cache the build directory
+          key: build-${{ runner.os }}-${{ hashFiles('CMakeLists.txt') }}
+          restore-keys: |
+            build-${{ runner.os }}-
+            build-
+      - name: Copy pre-installed libraries
+        run: |
+          mkdir -p build
+          unzip -o /vcpkg_installed.zip -d build
+      - name: Configurations
+        run: cmake --preset=linux-rel
+      - name: Build
+        run: cmake --build build --target install
+      - name: Cache Build Artifacts
+        uses: actions/cache@v3
+        with:
+          path: build
+          key: build-${{ runner.os }}-${{ hashFiles('CMakeLists.txt') }}
+      - name: Upload Build Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-artifacts-${{ runner.os }}
+          path: install

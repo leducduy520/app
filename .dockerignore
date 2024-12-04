@@ -1,0 +1,44 @@
+# Ignore build artifacts and temporary files
+build/
+install/
+*.o
+*.a
+*.so
+*.dll
+*.exe
+*.out
+
+# Ignore CMake-generated files
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+
+# Ignore temporary and system files
+*.swp
+*.tmp
+*.log
+*.bak
+*.core
+.DS_Store
+Thumbs.db
+
+# Ignore version control files
+.git/
+.gitignore
+.gitattributes
+
+# Ignore editor/project-specific files
+.idea/
+.vscode/
+*.iml
+*.pem
+
+# Ignore test artifacts
+Testing/
+test_results/
+
+# Ignore dependency managers' files
+vcpkg_installed/
+conanfile.lock
+conanbuildinfo.*

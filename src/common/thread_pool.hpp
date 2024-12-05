@@ -9,6 +9,7 @@
 #include <vector>
 #include <memory>
 
+namespace dld {
 class ThreadPool
 {
 public:
@@ -77,3 +78,4 @@ auto ThreadPool::submit(int priority, F&& f, Args&&... args) -> std::future<type
     condition.notify_one();
     return result;
 }
+} // namespace dld

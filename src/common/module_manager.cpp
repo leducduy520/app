@@ -3,6 +3,7 @@
 
 using namespace std::chrono;
 
+namespace dld {
 std::unique_ptr<ModuleManager> ModuleManager::m_instance = nullptr;
 std::once_flag ModuleManager::m_flag;
 
@@ -161,3 +162,4 @@ ModuleInterface::~ModuleInterface()
 {
     INDEBUG(std::cout << "~Module " << m_moduleName << '\n')
 }
+} // namespace dld

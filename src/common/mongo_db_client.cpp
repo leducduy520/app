@@ -9,9 +9,11 @@ using mongocxx::v_noabi::result::delete_result;
 using mongocxx::v_noabi::result::insert_one;
 using mongocxx::v_noabi::result::update;
 
-std::unique_ptr<DBClient> DBClient::m_instance;
-std::once_flag DBClient::m_flag;
 
+std::unique_ptr<dld::DBClient> dld::DBClient::m_instance;
+std::once_flag dld::DBClient::m_flag;
+
+namespace dld {
 void DBClient::Connect(std::string db_uri, const std::string& ca_path)
 {
     if(db_uri.empty())
@@ -123,7 +125,7 @@ mongocxx::v_noabi::cursor DBClient::RunPipeLine(const mongocxx::pipeline& pipeli
     }
     return m_dbcollection.aggregate(pipeline, opts);
 }
-
+} // namspace dld
 // void DBClient::testFunc()
 // {
 //     using bsoncxx::builder::stream::close_array;

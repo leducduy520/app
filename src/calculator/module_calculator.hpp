@@ -1,6 +1,8 @@
 #pragma once
 #include "module_manager.h"
 
+using namespace dld;
+
 class Calculator : public ModuleInterface
 {
 public:

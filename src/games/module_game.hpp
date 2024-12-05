@@ -4,6 +4,8 @@
 #include <string>
 #include <queue>
 
+using namespace dld;
+
 class ModuleGame : public ModuleInterface
 {
 public:

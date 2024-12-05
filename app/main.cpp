@@ -4,6 +4,8 @@
 #include <boost/version.hpp> // For Boost version
 #include <thread>            // For hardware concurrency
 
+using namespace dld;
+
 struct MongoData
 {
     std::optional<std::string> ca_path;

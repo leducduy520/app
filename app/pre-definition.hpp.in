@@ -3,6 +3,9 @@
 
 #include "magic_enum/magic_enum.hpp"
 #include "module_manager.h"
+
+using namespace dld;
+
 void init()
 {@register_lib@
 }

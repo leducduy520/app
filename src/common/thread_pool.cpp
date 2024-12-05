@@ -1,8 +1,9 @@
 #include "thread_pool.hpp"
 
-std::unique_ptr<ThreadPool> ThreadPool::pool;
-std::once_flag ThreadPool::creat_flag;
+std::unique_ptr<dld::ThreadPool> dld::ThreadPool::pool;
+std::once_flag dld::ThreadPool::creat_flag;
 
+namespace dld {
 ThreadPool::ThreadPool(size_t threads) : stop_flag(false), idle_threads(threads)
 {
     for (size_t i = 0; i < threads; ++i)
@@ -66,3 +67,4 @@ ThreadPool* ThreadPool::getInstance()
     std::call_once(creat_flag, []() { pool = std::make_unique<ThreadPool>(); });
     return pool.get();
 }
+} // namespace dld

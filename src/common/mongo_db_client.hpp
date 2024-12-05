@@ -17,6 +17,7 @@ using bsoncxx::builder::basic::kvp;
 using bsoncxx::builder::basic::make_array;
 using bsoncxx::builder::basic::make_document;
 
+namespace dld {
 class DBClient
 {
     const mongocxx::instance m_dbinstance;
@@ -51,5 +52,5 @@ public:
                                           const mongocxx::options::aggregate& opts,
                                           const std::string& collectionName = {});
 };
-
+} // namespace dld
 #endif /*  __DBCLIENT_GAME__ */

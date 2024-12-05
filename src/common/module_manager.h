@@ -32,7 +32,7 @@ typedef void* FunctionAddress;
 #if defined(_MSC_VER)
 #undef max
 #endif
-
+namespace dld {
 class ModuleInterface
 {
 protected:
@@ -171,4 +171,5 @@ inline void ModuleManager::registerModuleConstructor(T&& moduleName, Y&& constru
 {
     ModuleManager::getInstance()->m_factory.registerModule(std::forward<T>(moduleName), std::forward<Y>(constructor));
 }
+} // namespace dld
 #endif // __MODULE_MANAGER_H__

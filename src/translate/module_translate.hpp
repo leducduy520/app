@@ -4,6 +4,8 @@
 #include <cpprest/http_client.h>
 #include <unordered_map>
 
+using namespace dld;
+
 class ModuleTranslator : public ModuleInterface
 {
 public:

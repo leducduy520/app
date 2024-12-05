@@ -7,10 +7,10 @@
 ## Project related configuration options
 
 DOXYFILE_ENCODING       = UTF-8
-PROJECT_NAME            = "C++ Project Template"
+PROJECT_NAME            = "Module App"
 PROJECT_NUMBER          = 1.0.0
-PROJECT_BRIEF           =
-PROJECT_LOGO            =
+PROJECT_BRIEF           = "This is my personal project working with CMake, C++ and Docker"
+PROJECT_LOGO            = ./logo.png
 OUTPUT_DIRECTORY        = ./
 OUTPUT_LANGUAGE         = English
 MARKDOWN_SUPPORT        = YES
@@ -18,27 +18,30 @@ MARKDOWN_SUPPORT        = YES
 ## Build related configuration options
 
 EXTRACT_ALL             = YES
-RECURSIVE               = YES
+
+## Configuration options related to the HTML output
+
 GENERATE_HTML           = YES
+
+## Configuration options related to the LaTeX output
+
 GENERATE_LATEX          = NO
 
 ## Configuration options related to the input files
 
-INPUT                  =    ../src \
-                            ../src/pingpong_game \
-                            ../src/pingpong_game/include \
-                            ../src/interface \
-                            ../app
+INPUT                  =    ../app \
+                            ../src
 INPUT_ENCODING         = UTF-8
 FILE_PATTERNS          = *.c \
                          *.cc \
                          *.cpp \
                          *.h \
-                         *.hpp \
-                         *.md \
-                         *.txt
+                         *.hpp
+RECURSIVE               = YES
+
+# Configuration options related to the diagram generatior tools
 
 HAVE_DOT = YES
 CALL_GRAPH = YES
 CALLER_GRAPH = YES
-DIR_GRAPH_MAX_DEPTH = 4
+DOT_MULTI_TARGETS = YES

@@ -16,13 +16,15 @@ using namespace concurrency::streams; // Asynchronous streams
 // using namespace std;
 REGISTER_MODULE_CLASS(ModuleTranslator, NAME)
 
+string_t TranslationalRequest::api_key{};
+
 string_t cast_wstring_1(const char* cstr)
 {
 #ifdef _UTF16_STRINGS
     static std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
     return converter.from_bytes(cstr);
 #else
-    return string_t(cstr);
+    return {cstr};
 #endif
 }
 
@@ -40,7 +42,7 @@ string_t cast_wstring_2(const char* cstr)
     delete[] wbuffer; // Free the buffer
     return wstr;
 #else
-    return string_t(cstr);
+    return {cstr};
 #endif
 }
 
@@ -58,11 +60,12 @@ void ModuleTranslator::execute()
         std::cerr << "RAPIDAPI_KEY environment variable is not set.\n";
         return;
     }
-    m_apiKey = cast_wstring_1(rapidapi_key);
+    TranslationalRequest::api_key = cast_wstring_1(rapidapi_key);
 
     this->get_language_list();
 
-    while (true) {
+    while (true)
+    {
         string_t task{};
         ucout << "Enter a task you want me to execute: :\n"
               << "\t- translate: translate the source language to the target language\n"
@@ -96,45 +99,19 @@ void ModuleTranslator::shutdown()
 
 void ModuleTranslator::get_language_list()
 {
-    const uri url(U("https://deep-translate1.p.rapidapi.com/language/translate/v2/languages"));
-    http_client client(url);
-
-    http_request request_lang_list(methods::GET);
-    request_lang_list.headers().set_content_type(U("application/json"));
-    request_lang_list.headers().add(U("x-rapidapi-key"), m_apiKey);
-    request_lang_list.headers().add(U("x-rapidapi-host"), U("deep-translate1.p.rapidapi.com"));
-
-    auto requestTask = client
-                           .request(request_lang_list)
-
-                           // Handle response headers arriving.
-                           .then([=](const http_response& response) {
-                               if (response.status_code() == status_codes::OK)
-                               {
-                                   return response.extract_json();
-                               }
-                               throw std::runtime_error("Failed to get language list");
-                           })
-                           .then([](json::value response_data) {
-                               auto lang_list = response_data[U("languages")].as_array();
-                               std::unordered_map<string_t, string_t> languages;
-                               for (const auto& lang : lang_list)
-                               {
-                                   languages[lang.at(U("language")).as_string()] = lang.at(U("name")).as_string();
-                               }
-                               return languages;
-                           });
-
     try
     {
-        m_language_map = requestTask.get();
+        auto respone = TranslationalRequest::get_available_languages().get();
+        auto lang_list = respone[U("languages")].as_array();
+        for (const auto& lang : lang_list)
+        {
+            m_language_map[lang.at(U("language")).as_string()] = lang.at(U("name")).as_string();
+        }
     }
     catch (const std::exception& e)
     {
         std::cerr << e.what() << '\n';
     }
-
-    // Handle response body arriving.
 }
 
 void ModuleTranslator::do_translate()
@@ -150,50 +127,24 @@ void ModuleTranslator::do_translate()
     ucin >> target_lang;
 
     ucout << U("Enter the string in ") << m_language_map[source_lang] << U(" you want to translate to ")
-              << m_language_map[target_lang] << U(":\n");
+          << m_language_map[target_lang] << U(":\n");
     ucin.clear();
     ucin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
     std::getline(ucin, text);
-
-    const uri url(U("https://deep-translate1.p.rapidapi.com/language/translate/v2"));
-    http_client client(url);
 
     json::value request_data;
     request_data[U("q")] = json::value::string(text);
     request_data[U("source")] = json::value::string(source_lang);
     request_data[U("target")] = json::value::string(target_lang);
 
-    http_request request_translate(methods::POST);
-    request_translate.headers().set_content_type(U("application/json"));
-    request_translate.headers().add(U("x-rapidapi-key"), m_apiKey);
-    request_translate.headers().add(U("x-rapidapi-host"), U("deep-translate1.p.rapidapi.com"));
-    request_translate.set_body(request_data);
-
-    auto requestTask =
-        client
-            .request(request_translate)
-
-            // Handle response headers arriving.
-            .then([=](const http_response& response) {
-                if (response.status_code() == status_codes::OK)
-                {
-                    return response.extract_json();
-                }
-                throw std::runtime_error("Request failed with status code " + std::to_string(response.status_code()));
-            })
-            .then([](json::value response_data) {
-                ucout << U("Translation: ")
-                      << response_data[U("data")][U("translations")][U("translatedText")].as_string() << '\n';
-                return;
-            });
-
     try
     {
-        requestTask.wait();
+        auto respone = TranslationalRequest::get_translation(text, source_lang, target_lang).get();
+        ucout << U("Translation: ") << respone[U("data")][U("translations")][U("translatedText")].as_string() << '\n';
     }
     catch (const std::exception& e)
     {
-        std::cerr << "Error exception:" << e.what() << '\n';
+        std::cerr << e.what() << '\n';
     }
 }
 
@@ -204,44 +155,16 @@ void ModuleTranslator::do_detect()
     ucin.clear();
     ucin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
     std::getline(ucin, text);
-
-    const uri url(U("https://deep-translate1.p.rapidapi.com/language/translate/v2/detect"));
-    http_client client(url);
-
-    json::value request_data;
-    request_data[U("q")] = json::value::string(text);
-
-    http_request request_translate(methods::POST);
-    request_translate.headers().set_content_type(U("application/json"));
-    request_translate.headers().add(U("x-rapidapi-key"), m_apiKey);
-    request_translate.headers().add(U("x-rapidapi-host"), U("deep-translate1.p.rapidapi.com"));
-    request_translate.set_body(request_data);
-
-    auto requestTask =
-        client
-            .request(request_translate)
-
-            // Handle response headers arriving.
-            .then([=](const http_response& response) {
-                if (response.status_code() == status_codes::OK)
-                {
-                    return response.extract_json();
-                }
-                throw std::runtime_error("Request failed with status code " + std::to_string(response.status_code()));
-            })
-            .then([=](json::value response_data) {
-                ucout << U("Detected: ")
-                      << m_language_map[response_data[U("data")][U("detections")][0][U("language")].as_string()] << '\n';
-                return;
-            });
-
+    
     try
     {
-        requestTask.wait();
+        auto respone = TranslationalRequest::get_detection(text).get();
+        ucout << U("Detected: ") << m_language_map[respone[U("data")][U("detections")][0][U("language")].as_string()]
+              << '\n';
     }
     catch (const std::exception& e)
     {
-        std::cerr << "Error exception:" << e.what() << '\n';
+        std::cerr << e.what() << '\n';
     }
 }
 
@@ -255,4 +178,37 @@ void ModuleTranslator::do_print_available_language()
         return;
     };
     dld::print_in_columns(m_language_map, 5, impl);
+}
+
+pplx::task<web::json::value> TranslationalRequest::get_available_languages()
+{
+    RapidApiRequest request;
+    request.setApi_key(TranslationalRequest::api_key);
+    return request.get(U("https://deep-translate1.p.rapidapi.com/language/translate/v2/languages"));
+}
+
+pplx::task<web::json::value> TranslationalRequest::get_translation(const utility::string_t& text,
+                                                                   const utility::string_t& src,
+                                                                   const utility::string_t& des)
+{
+    RapidApiRequest request;
+    request.setApi_key(TranslationalRequest::api_key);
+
+    json::value request_data;
+    request_data[U("q")] = json::value::string(text);
+    request_data[U("source")] = json::value::string(src);
+    request_data[U("target")] = json::value::string(des);
+
+    return request.post(U("https://deep-translate1.p.rapidapi.com/language/translate/v2"), request_data);
+}
+
+pplx::task<web::json::value> TranslationalRequest::get_detection(const utility::string_t& text)
+{
+    RapidApiRequest request;
+    request.setApi_key(TranslationalRequest::api_key);
+
+    json::value request_data;
+    request_data[U("q")] = json::value::string(text);
+    
+    return request.post(U("https://deep-translate1.p.rapidapi.com/language/translate/v2/detect"), request_data);
 }

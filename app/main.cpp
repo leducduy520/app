@@ -1,5 +1,6 @@
 #include "main.hpp"
 #include "utilities.hpp"
+#include "cpprest/asyncrt_utils.h"
 #include <boost/predef.h>    // For platform and architecture detection
 #include <boost/version.hpp> // For Boost version
 #include <thread>            // For hardware concurrency
@@ -284,13 +285,16 @@ void start_module_execution(const std::string& module_name)
     const std::string module_path = ModuleManager::getInstance()->getModulePath(module_name);
     DBINSTANCE->UpdateDocument(
         make_document(kvp("_id", uid), kvp("history.sid", ssid)),
-        make_document(kvp("$push",
-                          make_document(kvp("history.$.modules",
-                                            make_document(kvp("module_id", module_name),
-                                                          kvp("module_path", module_path),
-                                                          kvp("execution_start",
-                                                              bsoncxx::types::b_date{std::chrono::system_clock::now()}),
-                                                          kvp("execution_end", "")))))));
+        make_document(
+            kvp("$push",
+                make_document(
+                    kvp("history.$.modules",
+                        make_document(kvp("module_id", module_name),
+                                      kvp("module_path", module_path),
+                                      kvp("execution_start",
+                                          utility::conversions::to_utf8string(
+                                              utility::datetime::utc_now().to_string(utility::datetime::RFC_1123))),
+                                      kvp("execution_end", "")))))));
 }
 
 void end_module_execution(const std::string& module_name)
@@ -298,11 +302,12 @@ void end_module_execution(const std::string& module_name)
     mongocxx::v_noabi::options::update udp;
     udp.array_filters(
         make_array(make_document(kvp("outer.sid", ssid)), make_document(kvp("inner.module_id", module_name))));
-    auto current_time = std::chrono::system_clock::now();
-    bsoncxx::types::b_date bson_date{current_time};
     DBINSTANCE->UpdateDocument(
         make_document(kvp("_id", uid), kvp("history.modules.module_id", module_name)),
-        make_document(kvp("$set", make_document(kvp("history.$[outer].modules.$[inner].execution_end", bson_date)))),
+        make_document(kvp("$set",
+                          make_document(kvp("history.$[outer].modules.$[inner].execution_end",
+                                            utility::conversions::to_utf8string(utility::datetime::utc_now().to_string(
+                                                utility::datetime::RFC_1123)))))),
         udp);
 }
 

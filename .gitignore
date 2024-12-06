@@ -6,3 +6,5 @@ install
 app/pre-definition.hpp
 docs/graph
 docs/html
+node/node_modules
+X509*

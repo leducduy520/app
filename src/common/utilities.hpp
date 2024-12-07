@@ -95,5 +95,14 @@ namespace dld
         }
         return {};
     }
+    inline bsoncxx::stdx::optional<std::string> get_api_base_uri()
+    {
+        const char* api_base_uri = std::getenv("API_BASE_URI");
+        if (api_base_uri != nullptr)
+        {
+            return api_base_uri;
+        }
+        return {};
+    }
 } // namespace dld
 #endif

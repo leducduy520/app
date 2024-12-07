@@ -20,7 +20,8 @@ TEST_CASE("Test mongo db get database and collection", "[mongo-get-db-coll]")
 {
     CHECK_NOTHROW(dld::DBClient::GetInstance()->Connect(dld::get_database_uri().value_or("")));
     CHECK_NOTHROW(dld::DBClient::GetInstance()->GetDatabase(dld::get_database_name().value_or("app")));
-    CHECK_NOTHROW(dld::DBClient::GetInstance()->GetCollection(dld::get_database_collection_name().value_or("module_app")));
+    CHECK_NOTHROW(
+        dld::DBClient::GetInstance()->GetCollection(dld::get_database_collection_name().value_or("module_app")));
 }
 
 TEST_CASE("Test api services", "[api-services]")
@@ -29,7 +30,8 @@ TEST_CASE("Test api services", "[api-services]")
     RecordRequest request;
     SECTION("s1")
     {
-        const web::http::uri url(U("http://localhost:3000/records"));
+        const web::http::uri url(
+            utility::conversions::to_string_t(dld::get_api_base_uri().value_or("http://localhost:3000")).append("/records"));
         web::http::client::http_client client(url);
 
         web::http::http_request a_request(web::http::methods::GET);
@@ -48,14 +50,18 @@ TEST_CASE("Test api services", "[api-services]")
     SECTION("s2")
     {
         dld::SimpleRestfulAPI simple_request;
-        auto task = simple_request.get(U("http://localhost:3000/records"));
+        auto task = simple_request.get(
+            utility::conversions::to_string_t(dld::get_api_base_uri().value_or("http://localhost:3000")).append("/records"));
         CHECK_NOTHROW(task.wait());
     }
 
     SECTION("s3")
     {
         dld::record::RecordRequest record_request;
-        auto task = record_request.get(dld::record::uri_builder().records());
+        auto task = record_request.get(
+            dld::record::uri_builder(
+                utility::conversions::to_string_t(dld::get_api_base_uri().value_or("http://localhost:3000")))
+                .records());
         CHECK_NOTHROW(task.wait());
     }
 }

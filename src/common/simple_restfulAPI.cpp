@@ -1,4 +1,5 @@
 #include "simple_restfulAPI.hpp"
+#include "utilities.hpp"
 #include <string>
 
 using namespace utility;              // Common utilities like string conversions
@@ -154,7 +155,7 @@ namespace dld
 
         RecordRequest::RecordRequest()
         {
-            m_api_request.headers().add(U("User-Agent"), U("insomnia/10.2.0"));
+            
         }
 
         pplx::task<web::json::value> RecordRequest::get(const uri_builder& x_url)

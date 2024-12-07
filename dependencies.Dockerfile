@@ -20,6 +20,9 @@ COPY vcpkg.json vcpkg-configuration.json /
 
 # Install dependencies using vcpkg
 WORKDIR /
-RUN /usr/local/vcpkg/vcpkg install --triplet x64-linux-release --clean-after-build && \
-    rm vcpkg.json vcpkg-configuration.json
+
+RUN /usr/local/vcpkg/vcpkg install --triplet x64-linux-release --clean-after-build
+
+RUN rm vcpkg.json vcpkg-configuration.json
+    
 RUN zip -r -9 vcpkg_installed.zip /vcpkg_installed && rm -rf /vcpkg_installed

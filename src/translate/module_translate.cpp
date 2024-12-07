@@ -16,7 +16,7 @@ using namespace concurrency::streams; // Asynchronous streams
 // using namespace std;
 REGISTER_MODULE_CLASS(ModuleTranslator, NAME)
 
-string_t TranslationalRequest::api_key{};
+RapidApiRequest TranslationalRequest::request{};
 
 string_t cast_wstring_1(const char* cstr)
 {
@@ -60,7 +60,8 @@ void ModuleTranslator::execute()
         std::cerr << "RAPIDAPI_KEY environment variable is not set.\n";
         return;
     }
-    TranslationalRequest::api_key = cast_wstring_1(rapidapi_key);
+    
+    TranslationalRequest::request.setApi_key_value(cast_wstring_1(rapidapi_key));
 
     this->get_language_list();
 
@@ -182,8 +183,6 @@ void ModuleTranslator::do_print_available_language()
 
 pplx::task<web::json::value> TranslationalRequest::get_available_languages()
 {
-    RapidApiRequest request;
-    request.setApi_key(TranslationalRequest::api_key);
     return request.get(U("https://deep-translate1.p.rapidapi.com/language/translate/v2/languages"));
 }
 
@@ -191,9 +190,6 @@ pplx::task<web::json::value> TranslationalRequest::get_translation(const utility
                                                                    const utility::string_t& src,
                                                                    const utility::string_t& des)
 {
-    RapidApiRequest request;
-    request.setApi_key(TranslationalRequest::api_key);
-
     json::value request_data;
     request_data[U("q")] = json::value::string(text);
     request_data[U("source")] = json::value::string(src);
@@ -204,9 +200,6 @@ pplx::task<web::json::value> TranslationalRequest::get_translation(const utility
 
 pplx::task<web::json::value> TranslationalRequest::get_detection(const utility::string_t& text)
 {
-    RapidApiRequest request;
-    request.setApi_key(TranslationalRequest::api_key);
-
     json::value request_data;
     request_data[U("q")] = json::value::string(text);
     

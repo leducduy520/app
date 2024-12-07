@@ -7,7 +7,8 @@ node/node_modules/
 docs/graph/
 docs/html/
 certs/
-data/
+mongo/data
+mongo/log
 
 app/pre-definition.hpp
 X509*

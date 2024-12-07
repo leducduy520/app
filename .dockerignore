@@ -3,7 +3,7 @@ build/
 install/
 node/node_modules/
 certs/
-data/
+mongo/
 *.o
 *.a
 *.so

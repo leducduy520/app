@@ -41,14 +41,6 @@ jobs:
         with:
           name: build-module_app
           path: install
-      - name: Run the application
-        env:
-          MONGODB_URI: 'mongodb://root:example@mongo:27017/'
-          MONGODB_NAME: app
-          MONGODB_COLL: module_app
-        run: |
-          cd install/bin
-          ./Myapp
     services:
       mongo:
         image: mongo:latest
@@ -57,21 +49,14 @@ jobs:
         env:
           MONGO_INITDB_ROOT_USERNAME: root
           MONGO_INITDB_ROOT_PASSWORD: example
-      mongo-express:
-        image: mongo-express
-        ports:
-          - 8081:8081
-        env:
-          ME_CONFIG_MONGODB_ADMINUSERNAME: 'root'
-          ME_CONFIG_MONGODB_ADMINPASSWORD: 'example'
-          ME_CONFIG_MONGODB_URL: 'mongodb://root:example@mongo:27017/'
-          ME_CONFIG_BASICAUTH: false
       apiservice:
         image: duyleduc520/apiservice:latest
         ports:
           - 3000:3000
         env:
           MONGODB_URI: mongodb://root:example@mongodb:27017/
+          MONGODB_NAME: app
+          MONGODB_COLL_NAME: module_app
   Test-Project:
     needs: Build-Project
     runs-on: ubuntu-latest

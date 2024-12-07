@@ -11,7 +11,10 @@ services:
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: example
     volumes:
-      - ./data:/data/db
+      - ./mongo/mongod.conf:/etc/mongod.conf:ro
+      - ./mongo/data:/data/db
+      - ./mongo/log:/var/log
+    command: ["mongod", "--config", "/etc/mongod.conf"]
     networks:
       - app_network
 

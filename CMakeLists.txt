@@ -102,4 +102,9 @@ endif(THIS_OS_LINUX)
 
 add_subdirectory(src)
 add_subdirectory(app)
+
+include(CTest)
+enable_testing()
+add_subdirectory(test)
+
 write_register_module_lib()

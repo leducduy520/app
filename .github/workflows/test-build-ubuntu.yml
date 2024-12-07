@@ -34,7 +34,7 @@ jobs:
       - name: Upload Build Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: build-module_app-${{ runner.os }}
+          name: build-module_app
           path: install
   Test-Project:
     needs: Build-Project
@@ -43,11 +43,11 @@ jobs:
       - name: Download Build Artifacts
         uses: actions/download-artifact@v3
         with:
-          name: build-module_app-${{ runner.os }}
-          path: build
+          name: build-module_app
+          path: install
       - name: Prepare the Build Artifact
         run: |
           echo "Preparing build artifact..."
-          ls -l build
+          ls -l install
 
       

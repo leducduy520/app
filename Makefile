@@ -1,11 +1,11 @@
 linux-encode:
-	base64 ./X509-cert.pem > mongo.pem.base64
+	base64 ./certs/X509-cert.pem > X509-cert.pem.base64
 linux-decode:
-	base64 ./X509-cert.pem > mongo.pem
+	base64 -d ./certs/X509-cert.pem.base64 > ./certs/X509-cert.pem
 windows-encode:
-	certutil -encode .\X509-cert.pem  mongo.pem.base64
+	certutil -encode .\certs\X509-cert.pem X509-cert.pem.base64
 windows-decode:
-	certutil -decode .\mongo.pem.base64 mongo.pem
+	certutil -decode .\certs\X509-cert.pem.base64 > .\certs\X509-cert.pem
 git-update:
 	git fetch
 	git pull

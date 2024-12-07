@@ -22,6 +22,11 @@ jobs:
         run: |
           mkdir -p build
           unzip -o /vcpkg_installed.zip -d build
+      - name: Prepare X509 certificates
+        run: |
+          mkdir -p certs
+          echo "${{secrets.X509CERT}}" > certs/X509-cert.pem.base64
+          base64 -d certs/X509-cert.pem.base64 > certs/X509-cert.pem
       - name: Configurations
         run: cmake --preset=linux-rel
       - name: Build
@@ -36,18 +41,36 @@ jobs:
         with:
           name: build-module_app
           path: install
+    services:
+      mongodb:
+        image: mongo:latest
+        env:
+          MONGO_INITDB_ROOT_USERNAME: root
+          MONGO_INITDB_ROOT_PASSWORD: example
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd "mongosh --eval 'db.runCommand({ ping: 1 })'"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 3
+        volumes:
+          - ./data:/data/db
+      apiservice:
+        image: duyleduc520/apiservice:latest
+        ports:
+          - 3000:3000
+        env:
+          MONGODB_URI: mongodb://root:example@mongodb:27017/
+          MONGODB_CERT: /certs/X509-cert.pem
+        volumes:
+          - ./certs:/certs
   Test-Project:
     needs: Build-Project
     runs-on: ubuntu-latest
     steps:
-      - name: Download Build Artifacts
-        uses: actions/download-artifact@v3
-        with:
-          name: build-module_app
-          path: install
-      - name: Prepare the Build Artifact
+      - name: dump step
         run: |
-          echo "Preparing build artifact..."
-          ls -l install
+          pwd
 
       

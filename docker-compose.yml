@@ -1,0 +1,33 @@
+name: module_app_services
+
+services:
+  mongo:
+    image: mongo:latest
+    container_name: mongo
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example
+    volumes:
+      - ./data:/data/db
+    networks:
+      - app_network
+
+  apiservice:
+    image: duyleduc520/apiservice:latest
+    container_name: apiservice
+    ports:
+      - "3000:3000"
+    environment:
+      MONGODB_URI: mongodb://root:example@mongo:27017/
+      MONGODB_CERT: /certs/X509-cert.pem
+    volumes:
+      - ./certs:/certs
+    depends_on:
+      - mongo
+    networks:
+      - app_network
+
+networks:
+  app_network:
+    driver: bridge

@@ -1,6 +1,9 @@
 # Ignore build artifacts and temporary files
 build/
 install/
+node/node_modules/
+certs/
+data/
 *.o
 *.a
 *.so

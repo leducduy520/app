@@ -52,18 +52,18 @@ jobs:
       mongo:
         image: mongo:latest
         ports:
-          - 27017:27017
+          - 127.0.0.1:27017:27017
         env:
           MONGO_INITDB_ROOT_USERNAME: root
           MONGO_INITDB_ROOT_PASSWORD: example
       apiservice:
         image: duyleduc520/apiservice:latest
         ports:
-          - 3000:3000
+          - 127.0.0.1:3000:3000
         env:
           MONGODB_URI: mongodb://root:example@mongo:27017/
           MONGODB_NAME: app
-          MONGODB_COLL_NAME: module_app
+          MONGODB_COLL: module_app
   Test-Project:
     needs: Build-Project
     runs-on: ubuntu-latest

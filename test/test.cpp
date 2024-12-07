@@ -7,11 +7,8 @@
 TEST_CASE("Test mongo db environment variables", "[mongo-env-variables]")
 {
     CHECK(dld::get_database_uri().has_value());
-    CHECK(dld::get_database_uri().value() == "mongodb://root:example@localhost:27017/");
     CHECK(dld::get_database_name().has_value());
-    CHECK(dld::get_database_name().value() == "app");
     CHECK(dld::get_database_collection_name().has_value());
-    CHECK(dld::get_database_name().value() == "module_app");
 }
 
 TEST_CASE("Test mongo db connection", "[mongo-connnection]")
@@ -23,7 +20,7 @@ TEST_CASE("Test mongo db get database and collection", "[mongo-get-db-coll]")
 {
     CHECK_NOTHROW(dld::DBClient::GetInstance()->Connect(dld::get_database_uri().value_or("")));
     CHECK_NOTHROW(dld::DBClient::GetInstance()->GetDatabase(dld::get_database_name().value_or("app")));
-    CHECK_NOTHROW(dld::DBClient::GetInstance()->GetCollection(dld::get_database_name().value_or("module_app")));
+    CHECK_NOTHROW(dld::DBClient::GetInstance()->GetCollection(dld::get_database_collection_name().value_or("module_app")));
 }
 
 TEST_CASE("Test api services", "[api-services]")

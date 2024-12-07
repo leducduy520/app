@@ -13,9 +13,9 @@ services:
     networks:
       - app_network
 
-  apiservice:
+  node-service:
     image: duyleduc520/apiservice:latest
-    container_name: apiservice
+    container_name: node-service
     ports:
       - "3000:3000"
     environment:

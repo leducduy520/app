@@ -35,7 +35,7 @@ Thumbs.db
 .idea/
 .vscode/
 *.iml
-*.pem
+**.pem
 
 # Ignore test artifacts
 Testing/

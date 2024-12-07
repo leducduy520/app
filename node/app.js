@@ -3,6 +3,7 @@ const express = require("express");
 const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
 const dotenv = require("dotenv");
+const fs = require("fs"); // Import filesystem module
 const { detectAuthMethod, AuthMethods } = require("./utils/authUtils"); // Import utility for authentication detection
 const recordsRoutes = require("./routes/recordsRoutes");
 
@@ -21,6 +22,32 @@ const dbName = args[0] || process.env.MONGODB_NAME || "default_database"; // Dat
 const collectionName =
   args[1] || process.env.MONGODB_COLL || "default_collection"; // Collection name
 console.log(`Using database: ${dbName}, collection: ${collectionName}`);
+
+// Check if 'MONGODB_CERT_ENCODE' environment variable exists
+if (process.env.MONGODB_CERT_ENCODE) {
+  console.log("Environment variable 'MONGODB_CERT_ENCODE' detected.");
+
+  // Path for the base64-encoded file and decoded file
+  const encodedFilePath = "X509-cert.pem.base64";
+  const decodedFilePath = process.env.MONGODB_CERT;
+
+  try {
+    // Write the base64-encoded content to a file
+    fs.writeFileSync(encodedFilePath, process.env.MONGODB_CERT_ENCODE, "utf8");
+    console.log(`Encoded certificate written to ${encodedFilePath}`);
+
+    // Decode the base64 file and save it to the decoded file path
+    const encodedContent = fs.readFileSync(encodedFilePath, "utf8");
+    const decodedContent = Buffer.from(encodedContent, "base64").toString("utf8");
+    fs.writeFileSync(decodedFilePath, decodedContent, "utf8");
+    console.log(`Decoded certificate saved to ${decodedFilePath}`);
+  } catch (err) {
+    console.error("Error processing 'MONGODB_CERT_ENCODE':", err.message);
+    process.exit(1); // Exit with an error code
+  }
+} else {
+  console.log("Environment variable 'MONGODB_CERT_ENCODE' is not set.");
+}
 
 // Detect the authentication method from MongoDB URI
 const auth_method = detectAuthMethod(process.env.MONGODB_URI);

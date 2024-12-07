@@ -41,6 +41,14 @@ jobs:
         with:
           name: build-module_app
           path: install
+      - name: Run the application
+        env:
+          MONGODB_URI: mongodb://root:example@mongodb:27017/
+          MONGODB_NAME: app
+          MONGODB_COLL: module_app
+        run: |
+          cd install/bin
+          ./Myapp
     services:
       mongodb:
         image: mongo:latest
@@ -62,9 +70,6 @@ jobs:
           - 3000:3000
         env:
           MONGODB_URI: mongodb://root:example@mongodb:27017/
-          MONGODB_CERT: /certs/X509-cert.pem
-        volumes:
-          - ./certs:/certs
   Test-Project:
     needs: Build-Project
     runs-on: ubuntu-latest

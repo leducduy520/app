@@ -28,7 +28,7 @@ jobs:
       #     echo "${{secrets.X509CERT}}" > certs/X509-cert.pem.base64
       #     base64 -d certs/X509-cert.pem.base64 > certs/X509-cert.pem
       - name: Configurations
-        run: cmake --preset=linux-rel
+        run: cmake --preset=linux-rel --fresh
       - name: Build
         run: cmake --build build --target install
       - name: Do Testing

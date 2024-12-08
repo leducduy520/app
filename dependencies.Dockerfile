@@ -12,8 +12,8 @@ RUN apt-get update && apt-get install -y \
 FROM dependencies AS vcpkg_build
 
 # Clone and bootstrap vcpkg
-RUN git clone --depth 1 https://github.com/microsoft/vcpkg.git /usr/local/vcpkg && \
-    sh /usr/local/vcpkg/bootstrap-vcpkg.sh
+RUN git clone --depth 1 https://github.com/microsoft/vcpkg.git /vcpkg && \
+    sh /vcpkg/bootstrap-vcpkg.sh
 
 # Copy vcpkg configuration files
 COPY vcpkg.json vcpkg-configuration.json /
@@ -21,7 +21,7 @@ COPY vcpkg.json vcpkg-configuration.json /
 # Install dependencies using vcpkg
 WORKDIR /
 
-RUN /usr/local/vcpkg/vcpkg install --triplet x64-linux-release --clean-after-build
+RUN vcpkg/vcpkg install --triplet x64-linux-release --clean-after-build
 
 RUN rm vcpkg.json vcpkg-configuration.json
     

@@ -68,6 +68,9 @@ switch (auth_method) {
     {
       connectionOptions.tls = true; // Enable TLS for X.509
       connectionOptions.tlsCertificateKeyFile = process.env.MONGODB_CERT; // Path to X.509 certificate
+      connectionOptions.tlsCAFile = process.env.MONGODB_CA;
+      connectionOptions.authSource = "$external"
+      connectionOptions.authMechanism ="MONGODB-X509";
       console.log("Detected Authentication Method: X.509");
     }
     break;

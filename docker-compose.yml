@@ -24,10 +24,12 @@ services:
     ports:
       - 127.0.0.1:8081:8081
     environment:
-      ME_CONFIG_MONGODB_URL: "mongodb://database:27017/"
-      ME_CONFIG_MONGODB_TLS: true
-      ME_CONFIG_MONGODB_TLS_CA_FILE: "/etc/tls/ca.pem"
-      ME_CONFIG_MONGODB_TLS_CERT_FILE: "/etc/tls/client.pem"
+      ME_CONFIG_MONGODB_URL: "mongodb://root:example@database:27017/"
+      ME_CONFIG_MONGODB_AUTH_USERNAME: root
+      ME_CONFIG_MONGODB_AUTH_PASSWORD: example
+      ME_CONFIG_BASICAUTH_ENABLED: true
+      ME_CONFIG_BASICAUTH_USERNAME: user
+      ME_CONFIG_BASICAUTH_PASSWORD: password
     volumes:
       - ./mongo/tls:/etc/tls
     depends_on:
@@ -36,14 +38,18 @@ services:
       - app_network
 
   dld-express-api:
-    image: duyleduc520/apiservice:latest
+    image: apiservice:latest
     container_name: dld-express-api
     ports:
       - "3000:3000"
     environment:
-      MONGODB_URI: mongodb://root:example@database:27017/?authSource=admin
+      MONGODB_URI: mongodb://database:27017/?authMechanism=MONGODB-X509
       MONGODB_NAME: app
       MONGODB_COLL: module_app
+      MONGODB_CERT: "/etc/tls/client.pem"
+      MONGODB_CA: "/etc/tls/ca.pem"
+    volumes:
+      - ./mongo/tls:/etc/tls
     depends_on:
       - database
     networks:

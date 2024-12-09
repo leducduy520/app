@@ -9,6 +9,7 @@ docs/html/
 certs/
 mongo/data
 mongo/log
+mongo/tls
 
 app/pre-definition.hpp
 X509*

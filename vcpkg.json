@@ -3,12 +3,13 @@
   "name": "app",
   "version": "0.0.1",
   "dependencies": [
-    "cpprestsdk",
-    "mongo-cxx-driver",
-    "boost-predef",
     "boost-config",
+    "boost-predef",
+    "cpprestsdk",
+    "magic-enum",
+    "mongo-cxx-driver",
     "nlohmann-json",
-    "magic-enum"
+    "catch2"
   ],
   "overrides": [
     {

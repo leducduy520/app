@@ -13,7 +13,7 @@ public:
     static pplx::task<web::json::value> get_available_languages();
     static pplx::task<web::json::value> get_translation(const utility::string_t& text, const utility::string_t& src, const utility::string_t& des);
     static pplx::task<web::json::value> get_detection(const utility::string_t& text);
-    static utility::string_t api_key;
+    static RapidApiRequest request;
 private:
 };
 

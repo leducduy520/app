@@ -1,6 +1,9 @@
 # Ignore build artifacts and temporary files
 build/
 install/
+node/node_modules/
+certs/
+mongo/
 *.o
 *.a
 *.so
@@ -32,7 +35,7 @@ Thumbs.db
 .idea/
 .vscode/
 *.iml
-*.pem
+**.pem
 
 # Ignore test artifacts
 Testing/

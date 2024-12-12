@@ -1,16 +1,15 @@
-mongo-config-ubuntu:
-	cmake -S modules/mongo-cxx-driver -B modules/mongo-cxx-driver/build -DCMAKE_INSTALL_PREFIX="prebuild/mongocxx" -DENABLE_BSONCXX_POLY_USE_IMPLS=ON -DBUILD_VERSION="3.10.2" -DCMAKE_CXX_FLAGS_INIT="-fPIC" -DCMAKE_C_FLAGS_INIT="-fPIC" -DCMAKE_BUILD_TYPE=Release
-
-mongo-config-msvc:
-	cmake -S modules/mongo-cxx-driver -B modules/mongo-cxx-driver/build -DCMAKE_INSTALL_PREFIX="prebuild/mongocxx" -DENABLE_BSONCXX_POLY_USE_IMPLS=ON -DBUILD_VERSION="3.10.2" -G "Visual Studio 17 2022" -A x64 -DCMAKE_BUILD_TYPE=Release
-
-mongo-install:
-	cmake --build modules/mongo-cxx-driver/build -t install --config Release -j8
-
-mongo-msvc: mongo-config-msvc mongo-install
-
-mongo-ubuntu: mongo-config-ubuntu mongo-install
-
+linux-encode:
+	base64 ./certs/X509-cert.pem > ./certs/X509-cert.pem.base64
+linux-decode:
+	base64 -d ./certs/X509-cert.pem.base64 > ./certs/X509-cert.pem
+windows-encode:
+	certutil -encode .\certs\X509-cert.pem .\certs\X509-cert.pem.base64
+windows-decode:
+	certutil -decode .\certs\X509-cert.pem.base64 .\certs\X509-cert.pem
 git-update:
 	git fetch
 	git pull
+
+# docker run --name apiservice -p 127.0.0.1:3000:3000 -e MONGODB_URI='mongodb+srv://cluster0.24ewqox.mongodb.net/?authSource=%24external&authMechanism=MONGODB-X509' -e MONGODB_CERT_ENCODE="$(echo "$(cat $(pwd)/certs/X509-cert.pem.base64)")" -w /node duyleduc520/apiservice
+# gpg --symmetric --cipher-algo AES256 yourfile.pem
+# gpg --output yourfile.pem --decrypt yourfile.pem.gpg

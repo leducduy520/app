@@ -1,0 +1,60 @@
+name: module_app_services
+
+services:
+  database:
+    image: mongo:latest
+    container_name: database
+    restart: always
+    ports:
+      - 27017:27017
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example
+    volumes:
+      - ./mongo/data:/data/db
+      - ./mongo/tls:/etc/tls
+      - ./mongo:/etc/mongoconf
+    command: ["mongod", "--auth", "--tlsMode", "allowTLS", "--tlsCertificateKeyFile", "/etc/tls/server.pem", "--tlsCAFile", "/etc/tls/ca.pem"]
+    networks:
+      - app_network
+
+  monitor:
+    image: mongo-express
+    container_name: monitor
+    ports:
+      - 127.0.0.1:8081:8081
+    environment:
+      ME_CONFIG_MONGODB_URL: "mongodb://root:example@database:27017/"
+      ME_CONFIG_MONGODB_AUTH_USERNAME: root
+      ME_CONFIG_MONGODB_AUTH_PASSWORD: example
+      ME_CONFIG_BASICAUTH_ENABLED: true
+      ME_CONFIG_BASICAUTH_USERNAME: user
+      ME_CONFIG_BASICAUTH_PASSWORD: password
+    volumes:
+      - ./mongo/tls:/etc/tls
+    depends_on:
+      - database
+    networks:
+      - app_network
+
+  dld-express-api:
+    image: apiservice:latest
+    container_name: dld-express-api
+    ports:
+      - "3000:3000"
+    environment:
+      MONGODB_URI: mongodb://database:27017/?authMechanism=MONGODB-X509
+      MONGODB_NAME: app
+      MONGODB_COLL: module_app
+      MONGODB_CERT: "/etc/tls/client.pem"
+      MONGODB_CA: "/etc/tls/ca.pem"
+    volumes:
+      - ./mongo/tls:/etc/tls
+    depends_on:
+      - database
+    networks:
+      - app_network
+
+networks:
+  app_network:
+    driver: bridge

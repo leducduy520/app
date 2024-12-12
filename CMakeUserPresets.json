@@ -18,7 +18,7 @@
                 "base"
             ],
             "environment": {
-                "VCPKG_ROOT": "/usr/local/vcpkg",
+                "VCPKG_ROOT": "/vcpkg",
                 "PATH": "$env{VCPKG_ROOT}:$penv{PATH}"
             },
             "condition":{

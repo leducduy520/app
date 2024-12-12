@@ -2,11 +2,13 @@
 FROM ubuntu:latest AS dependencies
 
 # Install essential build tools and utilities
-RUN apt-get update && apt-get install -y \
-    build-essential cmake git doxygen python3 python3-pip ninja-build \
-    graphviz pkg-config dos2unix cmake-format libssl-dev clang-tidy clang-format \
-    curl zip unzip tar && \
-    rm -rf /var/lib/apt/lists/*
+RUN apt-get update
+RUN apt-get install -y --no-install-recommends build-essential cmake git
+RUN apt-get install -y --no-install-recommends curl zip unzip tar
+RUN apt-get install -y --no-install-recommends ca-certificates
+RUN apt-get install -y --no-install-recommends pkg-config
+RUN rm -rf /var/lib/apt/lists/*
+    
 
 # Stage 2: Install vcpkg and Dependencies
 FROM dependencies AS vcpkg_build

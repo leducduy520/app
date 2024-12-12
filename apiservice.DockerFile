@@ -1,5 +1,5 @@
 # Use Node.js LTS as the base image
-FROM node:18
+FROM node:18-slim
 
 # Set the working directory
 WORKDIR /node

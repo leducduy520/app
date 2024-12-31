@@ -1,10 +1,8 @@
 #pragma once
-#include <filesystem>
-#ifdef _WIN32
-#include <Windows.h>
-#else
-#include <linux/limits.h>
-#include <unistd.h>
+
+#if defined(_MSC_VER)
+#undef max
+#undef min
 #endif
 
 #include <string>
@@ -14,9 +12,7 @@
 #include <codecvt>
 #include <unordered_map>
 #include <chrono>
-
 #include "pre-definition.hpp"
-#include "mongo_db_client.hpp"
 
 static std::string uid;
 static bsoncxx::types::b_oid ssid;

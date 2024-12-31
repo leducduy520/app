@@ -1,9 +1,10 @@
-#include "main.hpp"
+#include "mongo_db_client.hpp"            // For hardware concurrency
 #include "utilities.hpp"
+#include "main.hpp"
 #include "cpprest/asyncrt_utils.h"
 #include <boost/predef.h>    // For platform and architecture detection
 #include <boost/version.hpp> // For Boost version
-#include <thread>            // For hardware concurrency
+#include <thread>
 
 using namespace dld;
 

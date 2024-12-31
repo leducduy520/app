@@ -1,8 +1,11 @@
+#define _SILENCE_ALL_MS_EXT_DEPRECATION_WARNINGS
+
 #include <catch2/benchmark/catch_benchmark_all.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include "mongo_db_client.hpp"
 #include "simple_restfulAPI.hpp"
 #include "utilities.hpp"
+#include <string>
 
 TEST_CASE("Test mongo db environment variables", "[mongo-env-variables]")
 {
@@ -31,7 +34,7 @@ TEST_CASE("Test api services", "[api-services]")
     SECTION("s1")
     {
         const web::http::uri url(
-            utility::conversions::to_string_t(dld::get_api_base_uri().value_or("http://localhost:3000")).append("/records"));
+            utility::conversions::to_string_t(dld::get_api_base_uri().value_or("http://localhost:3000").append("/records")));
         web::http::client::http_client client(url);
 
         web::http::http_request a_request(web::http::methods::GET);
@@ -41,7 +44,7 @@ TEST_CASE("Test api services", "[api-services]")
             {
                 return response.extract_json();
             }
-            throw std::runtime_error(U("A request failed with status code ") + std::to_string(response.status_code()));
+            throw std::runtime_error(std::string("A request failed with status code ") + std::to_string(response.status_code()));
         });
 
         CHECK_NOTHROW(task.wait());
@@ -51,7 +54,7 @@ TEST_CASE("Test api services", "[api-services]")
     {
         dld::SimpleRestfulAPI simple_request;
         auto task = simple_request.get(
-            utility::conversions::to_string_t(dld::get_api_base_uri().value_or("http://localhost:3000")).append("/records"));
+            utility::conversions::to_string_t(dld::get_api_base_uri().value_or("http://localhost:3000").append("/records")));
         CHECK_NOTHROW(task.wait());
     }
 

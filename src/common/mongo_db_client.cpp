@@ -60,12 +60,7 @@ void DBClient::GetDatabase(const std::string& name)
 
 void DBClient::GetCollection(const std::string& name)
 {
-    if (m_dbdatabase.has_collection(name))
-    {
-        m_dbcollection = m_dbdatabase[name];
-        return;
-    }
-    this->CreateCollection(name);
+    m_dbcollection = m_dbdatabase[name];
 }
 
 void DBClient::CreateCollection(const std::string& collectionName)

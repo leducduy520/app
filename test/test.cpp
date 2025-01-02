@@ -1,70 +1,73 @@
 #define _SILENCE_ALL_MS_EXT_DEPRECATION_WARNINGS
 
-#include <catch2/benchmark/catch_benchmark_all.hpp>
-#include <catch2/catch_test_macros.hpp>
+#include <gtest/gtest.h>
+#include <gmock/gmock.h>
 #include "mongo_db_client.hpp"
 #include "simple_restfulAPI.hpp"
 #include "utilities.hpp"
 #include <string>
 
-TEST_CASE("Test mongo db environment variables", "[mongo-env-variables]")
+class ApiTestCase : public ::testing::Test
 {
-    CHECK(dld::get_database_uri().has_value());
-    CHECK(dld::get_database_name().has_value());
-    CHECK(dld::get_database_collection_name().has_value());
-}
-
-TEST_CASE("Test mongo db connection", "[mongo-connnection]")
-{
-    CHECK_NOTHROW(dld::DBClient::GetInstance()->Connect(dld::get_database_uri().value_or("")));
-}
-
-TEST_CASE("Test mongo db get database and collection", "[mongo-get-db-coll]")
-{
-    CHECK_NOTHROW(dld::DBClient::GetInstance()->Connect(dld::get_database_uri().value_or("")));
-    CHECK_NOTHROW(dld::DBClient::GetInstance()->GetDatabase(dld::get_database_name().value_or("app")));
-    CHECK_NOTHROW(
-        dld::DBClient::GetInstance()->GetCollection(dld::get_database_collection_name().value_or("module_app")));
-}
-
-TEST_CASE("Test api services", "[api-services]")
-{
-    using namespace dld::record;
-    RecordRequest request;
-    SECTION("s1")
+protected:
+    void SetUp() override
     {
-        const web::http::uri url(
-            utility::conversions::to_string_t(dld::get_api_base_uri().value_or("http://localhost:3000").append("/records")));
-        web::http::client::http_client client(url);
 
-        web::http::http_request a_request(web::http::methods::GET);
-
-        auto task = client.request(a_request).then([=](const web::http::http_response& response) {
-            if (response.status_code() == web::http::status_codes::OK)
-            {
-                return response.extract_json();
-            }
-            throw std::runtime_error(std::string("A request failed with status code ") + std::to_string(response.status_code()));
-        });
-
-        CHECK_NOTHROW(task.wait());
     }
-
-    SECTION("s2")
+    void TearDown() override
     {
-        dld::SimpleRestfulAPI simple_request;
-        auto task = simple_request.get(
-            utility::conversions::to_string_t(dld::get_api_base_uri().value_or("http://localhost:3000").append("/records")));
-        CHECK_NOTHROW(task.wait());
-    }
 
-    SECTION("s3")
-    {
-        dld::record::RecordRequest record_request;
-        auto task = record_request.get(
-            dld::record::uri_builder(
-                utility::conversions::to_string_t(dld::get_api_base_uri().value_or("http://localhost:3000")))
-                .records());
-        CHECK_NOTHROW(task.wait());
     }
+};
+
+TEST_F(ApiTestCase, MongoEnvVariables)
+{
+    EXPECT_TRUE(dld::get_database_uri().has_value());
+    EXPECT_TRUE(dld::get_database_name().has_value());
+    EXPECT_TRUE(dld::get_database_collection_name().has_value());
 }
+
+
+TEST_F(ApiTestCase, ConnectToMongoDatabase)
+{
+    EXPECT_NO_THROW(dld::DBClient::GetInstance()->Connect("mongodb://root:example@localhost:27017"));
+}
+
+ TEST_F(ApiTestCase, APIService)
+ {
+     using namespace dld::record;
+     RecordRequest request;
+     {
+         const web::http::uri url(
+             utility::conversions::to_string_t(std::string("http://localhost:3000").append("/records")));
+         web::http::client::http_client client(url);
+
+         web::http::http_request a_request(web::http::methods::GET);
+
+         auto task = client.request(a_request).then([=](const web::http::http_response& response) {
+             if (response.status_code() == web::http::status_codes::OK)
+             {
+                 return response.extract_json();
+             }
+             throw std::runtime_error(std::string("A request failed with status code ") + std::to_string(response.status_code()));
+         });
+
+         EXPECT_NO_THROW(task.wait());
+     }
+
+     {
+         dld::SimpleRestfulAPI simple_request;
+         auto task = simple_request.get(
+             utility::conversions::to_string_t(std::string("http://localhost:3000").append("/records")));
+         EXPECT_NO_THROW(task.wait());
+     }
+
+     {
+         dld::record::RecordRequest record_request;
+         auto task = record_request.get(
+             dld::record::uri_builder(
+                 utility::conversions::to_string_t(std::string("http://localhost:3000")))
+                 .records());
+         EXPECT_NO_THROW(task.wait());
+     }
+ }

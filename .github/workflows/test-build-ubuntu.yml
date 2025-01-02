@@ -18,15 +18,6 @@ jobs:
           restore-keys: |
             build-${{ runner.os }}-
             build-
-      # - name: Copy pre-installed libraries
-      #   run: |
-      #     mkdir -p build
-      #     unzip -o /vcpkg_installed.zip -d build
-      # - name: Prepare X509 certificates
-      #   run: |
-      #     mkdir -p certs
-      #     echo "${{secrets.X509CERT}}" > certs/X509-cert.pem.base64
-      #     base64 -d certs/X509-cert.pem.base64 > certs/X509-cert.pem
       - name: Configurations
         run: cmake --preset=linux-rel --fresh
       - name: Build

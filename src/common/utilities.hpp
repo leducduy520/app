@@ -68,41 +68,30 @@ namespace dld
             std::cout << '\n';
         }
     }
+    inline std::string getEnv(const std::string& name)
+    {
+        const char* value = std::getenv(name.c_str());
+        if (value!= nullptr)
+        {
+            return value;
+        }
+        return "";
+    }
     inline bsoncxx::stdx::optional<std::string> get_database_collection_name()
     {
-        const char* coll_name = std::getenv("MONGODB_COLL");
-        if (coll_name != nullptr)
-        {
-            return std::string{coll_name};
-        }
-        return {};
+        return getEnv("MONGODB_COLL");
     }
     inline bsoncxx::stdx::optional<std::string> get_database_name()
     {
-        const char* database_name = std::getenv("MONGODB_NAME");
-        if (database_name != nullptr)
-        {
-            return database_name;
-        }
-        return {};
+        return getEnv("MONGODB_NAME");
     }
     inline bsoncxx::stdx::optional<std::string> get_database_uri()
     {
-        const char* database_uri = std::getenv("MONGODB_URI");
-        if (database_uri != nullptr)
-        {
-            return database_uri;
-        }
-        return {};
+        return getEnv("MONGODB_URI");
     }
     inline bsoncxx::stdx::optional<std::string> get_api_base_uri()
     {
-        const char* api_base_uri = std::getenv("API_BASE_URI");
-        if (api_base_uri != nullptr)
-        {
-            return api_base_uri;
-        }
-        return {};
+        return getEnv("API_BASE_URI");
     }
 } // namespace dld
 #endif

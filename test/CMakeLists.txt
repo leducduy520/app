@@ -1,19 +1,24 @@
 project(api-test)
 
-add_executable(${PROJECT_NAME} test.cpp)
+include(FetchContent)
+FetchContent_Declare(
+    googletest
+    URL https://github.com/google/googletest/archive/03597a01ee50ed33e9dfd640b249b4be3799d395.zip
+)
 
-find_package(Catch2 CONFIG REQUIRED)
-target_link_libraries(${PROJECT_NAME} PRIVATE common Catch2::Catch2WithMain)
+set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+FetchContent_MakeAvailable(googletest)
+
+add_executable(${PROJECT_NAME} test.cpp)
+target_link_libraries(${PROJECT_NAME} PRIVATE common GTest::gtest_main GTest::gmock_main)
 
 set_target_properties(
     ${PROJECT_NAME} PROPERTIES INSTALL_RPATH ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}
 )
+set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER "Test")
 
-set_target_properties(${PROJECT_NAME} Catch2::Catch2WithMain PROPERTIES FOLDER "Test")
-
-list(APPEND CMAKE_MODULE_PATH ${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/share/catch2)
-include(Catch)
-catch_discover_tests(${PROJECT_NAME} PROPERTIES ENVIRONMENT "MONGODB_SETUP=$ENV{MONGODB_URI}|$ENV{MONGODB_NAME}|$ENV{MONGODB_COLL}")
+include(GoogleTest)
+gtest_discover_tests(${PROJECT_NAME})
 
 install(
     TARGETS ${PROJECT_NAME}

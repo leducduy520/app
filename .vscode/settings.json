@@ -108,7 +108,8 @@
     "typeindex": "cpp",
     "csetjmp": "cpp",
     "rope": "cpp",
-    "*.ipp": "cpp"
+    "*.ipp": "cpp",
+    "execution": "cpp"
   },
   "C_Cpp_Runner.cCompilerPath": "gcc",
   "C_Cpp_Runner.cppCompilerPath": "g++",

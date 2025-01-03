@@ -17,40 +17,41 @@ using bsoncxx::builder::basic::kvp;
 using bsoncxx::builder::basic::make_array;
 using bsoncxx::builder::basic::make_document;
 
-namespace dld {
-class DBClient
+namespace dld
 {
-    const mongocxx::instance m_dbinstance;
-    mongocxx::client m_dbclient;
-    mongocxx::database m_dbdatabase;
-    mongocxx::collection m_dbcollection;
-    static std::unique_ptr<DBClient> m_instance;
-    static std::once_flag m_flag;
+    class DBClient
+    {
+        const mongocxx::instance m_dbinstance;
+        mongocxx::client m_dbclient;
+        mongocxx::database m_dbdatabase;
+        mongocxx::collection m_dbcollection;
+        static std::unique_ptr<DBClient> m_instance;
+        static std::once_flag m_flag;
 
-public:
-    void Connect(std::string db_uri = {}, const std::string& ca_path = {});
-    static DBClient* GetInstance();
-    static void DestroyInstance();
-    void GetDatabase(const std::string& name);
-    void GetCollection(const std::string& name);
-    void CreateCollection(const std::string& collectionName);
-    bsoncxx::stdx::optional<mongocxx::v_noabi::result::insert_one> InsertDocument(
-        const bsoncxx::document::value& document,
-        const std::string& collectionName = {});
-    bsoncxx::stdx::optional<mongocxx::v_noabi::result::update> UpdateDocument(
-        const bsoncxx::v_noabi::document::value& filter,
-        const bsoncxx::v_noabi::document::value& update,
-        const mongocxx::v_noabi::options::update& options = mongocxx::v_noabi::options::update(),
-        const std::string& collectionName = {});
-    bsoncxx::stdx::optional<bsoncxx::v_noabi::document::value> GetDocument(
-        const bsoncxx::v_noabi::document::value& filter,
-        const std::string& collectionName = {});
-    bsoncxx::stdx::optional<mongocxx::v_noabi::result::delete_result> DeleteDocument(
-        const bsoncxx::v_noabi::document::value& filter,
-        const std::string& collectionName = {});
-    mongocxx::v_noabi::cursor RunPipeLine(const mongocxx::pipeline& pl,
-                                          const mongocxx::options::aggregate& opts,
-                                          const std::string& collectionName = {});
-};
+    public:
+        void Connect(std::string db_uri = {}, const std::string& ca_path = {});
+        static DBClient* GetInstance();
+        static void DestroyInstance();
+        void GetDatabase(const std::string& name);
+        void GetCollection(const std::string& name);
+        void CreateCollection(const std::string& collectionName);
+        bsoncxx::stdx::optional<mongocxx::v_noabi::result::insert_one> InsertDocument(
+            const bsoncxx::document::value& document,
+            const std::string& collectionName = {});
+        bsoncxx::stdx::optional<mongocxx::v_noabi::result::update> UpdateDocument(
+            const bsoncxx::v_noabi::document::value& filter,
+            const bsoncxx::v_noabi::document::value& update,
+            const mongocxx::v_noabi::options::update& options = mongocxx::v_noabi::options::update(),
+            const std::string& collectionName = {});
+        bsoncxx::stdx::optional<bsoncxx::v_noabi::document::value> GetDocument(
+            const bsoncxx::v_noabi::document::value& filter,
+            const std::string& collectionName = {});
+        bsoncxx::stdx::optional<mongocxx::v_noabi::result::delete_result> DeleteDocument(
+            const bsoncxx::v_noabi::document::value& filter,
+            const std::string& collectionName = {});
+        mongocxx::v_noabi::cursor RunPipeLine(const mongocxx::pipeline& pl,
+                                              const mongocxx::options::aggregate& opts,
+                                              const std::string& collectionName = {});
+    };
 } // namespace dld
 #endif /*  __DBCLIENT_GAME__ */

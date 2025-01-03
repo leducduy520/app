@@ -60,7 +60,7 @@ void ModuleTranslator::execute()
         std::cerr << "RAPIDAPI_KEY environment variable is not set.\n";
         return;
     }
-    
+
     TranslationalRequest::request.setApi_key_value(cast_wstring_1(rapidapi_key));
 
     this->get_language_list();
@@ -156,7 +156,7 @@ void ModuleTranslator::do_detect()
     ucin.clear();
     ucin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
     std::getline(ucin, text);
-    
+
     try
     {
         auto respone = TranslationalRequest::get_detection(text).get();
@@ -202,6 +202,6 @@ pplx::task<web::json::value> TranslationalRequest::get_detection(const utility::
 {
     json::value request_data;
     request_data[U("q")] = json::value::string(text);
-    
+
     return request.post(U("https://deep-translate1.p.rapidapi.com/language/translate/v2/detect"), request_data);
 }

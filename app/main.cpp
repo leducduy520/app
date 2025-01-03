@@ -1,4 +1,4 @@
-#include "mongo_db_client.hpp"            // For hardware concurrency
+#include "mongo_db_client.hpp" // For hardware concurrency
 #include "utilities.hpp"
 #include "main.hpp"
 #include "cpprest/asyncrt_utils.h"

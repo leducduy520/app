@@ -9,27 +9,36 @@
 #include <cstdlib>
 
 #if !defined(NDEBUG)
-    #define INDEBUG(func) func;
+#define INDEBUG(func) func;
 #else
-    #define INDEBUG(func) ;
+#define INDEBUG(func) ;
 #endif
 
-#define INDEBUG_IF(func, expr) if(expr) {INDEBUG(func)} else {func;};
+#define INDEBUG_IF(func, expr)                                                                                         \
+    if (expr)                                                                                                          \
+    {                                                                                                                  \
+        INDEBUG(func)                                                                                                  \
+    }                                                                                                                  \
+    else                                                                                                               \
+    {                                                                                                                  \
+        func;                                                                                                          \
+    };
 
 namespace dld
 {
-    inline nlohmann::json to_njson(const std::string &str)
+    inline nlohmann::json to_njson(const std::string& str)
     {
         return nlohmann::json::parse(str);
     }
-    
+
     inline nlohmann::json to_njson(const bsoncxx::document::view_or_value& value,
                                    bsoncxx::ExtendedJsonMode mode = bsoncxx::ExtendedJsonMode::k_canonical)
     {
         return nlohmann::json::parse(bsoncxx::to_json(value.view(), mode));
     }
 
-    inline void print_3type_json_str(const bsoncxx::document::view_or_value& value, const bool debug_only = false) noexcept
+    inline void print_3type_json_str(const bsoncxx::document::view_or_value& value,
+                                     const bool debug_only = false) noexcept
     {
         auto impl = [&value]() {
             std::cout << "Converted nlohmann::json object with mode legacy: \n"
@@ -63,32 +72,37 @@ namespace dld
                 std::cout << '\n';
             }
         }
-        if (count % columns!= 0)
+        if (count % columns != 0)
         {
             std::cout << '\n';
         }
     }
+
     inline std::string getEnv(const std::string& name)
     {
         const char* value = std::getenv(name.c_str());
-        if (value!= nullptr)
+        if (value != nullptr)
         {
             return value;
         }
         return "";
     }
+
     inline bsoncxx::stdx::optional<std::string> get_database_collection_name()
     {
         return getEnv("MONGODB_COLL");
     }
+
     inline bsoncxx::stdx::optional<std::string> get_database_name()
     {
         return getEnv("MONGODB_NAME");
     }
+
     inline bsoncxx::stdx::optional<std::string> get_database_uri()
     {
         return getEnv("MONGODB_URI");
     }
+
     inline bsoncxx::stdx::optional<std::string> get_api_base_uri()
     {
         return getEnv("API_BASE_URI");

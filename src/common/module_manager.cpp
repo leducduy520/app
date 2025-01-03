@@ -3,163 +3,162 @@
 
 using namespace std::chrono;
 
-namespace dld {
-std::unique_ptr<ModuleManager> ModuleManager::m_instance = nullptr;
-std::once_flag ModuleManager::m_flag;
-
-// Register a module with its expected path
-void ModuleManager::registerModule(const std::string& moduleName, const std::string& modulePath)
+namespace dld
 {
-    std::cout << "Registering module " << moduleName << " with " << modulePath << '\n';
-    m_module_paths[moduleName] = modulePath;
-}
+    std::unique_ptr<ModuleManager> ModuleManager::m_instance = nullptr;
+    std::once_flag ModuleManager::m_flag;
 
-// Load a registered module
-bool ModuleManager::loadModule(const std::string& moduleName)
-{
-    auto pit = m_module_paths.find(moduleName);
-    if (pit == m_module_paths.end())
+    // Register a module with its expected path
+    void ModuleManager::registerModule(const std::string& moduleName, const std::string& modulePath)
     {
-        std::cerr << "Module not registered: " << moduleName << '\n';
-        return false;
+        std::cout << "Registering module " << moduleName << " with " << modulePath << '\n';
+        m_module_paths[moduleName] = modulePath;
     }
 
-    auto hModuleit = m_module_handle.find(moduleName);
-    if (hModuleit == m_module_handle.end())
+    // Load a registered module
+    bool ModuleManager::loadModule(const std::string& moduleName)
     {
-        LibraryHandle hModule = LoadLibraryFunction(pit->second.c_str());
-        if (hModule == nullptr)
+        auto pit = m_module_paths.find(moduleName);
+        if (pit == m_module_paths.end())
         {
-#ifdef _WIN32
-            std::cerr << "Failed to load module lib: " << moduleName << " Error: " << GetLastError() << '\n';
-#else
-            std::cerr << "Failed to load module lib: " << moduleName << " Error: " << dlerror() << '\n';
-#endif
+            std::cerr << "Module not registered: " << moduleName << '\n';
             return false;
         }
-        m_module_handle[moduleName] = hModule;
-    }
-    std::cout << "Loaded module: " << pit->second << '\n';
-    return true;
-}
 
-// Get a function pointer from a loaded module
-FunctionAddress ModuleManager::getModuleMethod(const std::string& moduleName, const std::string& functionName)
-{
-    auto pit = m_module_handle.find(moduleName);
-    if (pit == m_module_handle.end())
+        auto hModuleit = m_module_handle.find(moduleName);
+        if (hModuleit == m_module_handle.end())
+        {
+            LibraryHandle hModule = LoadLibraryFunction(pit->second.c_str());
+            if (hModule == nullptr)
+            {
+#ifdef _WIN32
+                std::cerr << "Failed to load module lib: " << moduleName << " Error: " << GetLastError() << '\n';
+#else
+                std::cerr << "Failed to load module lib: " << moduleName << " Error: " << dlerror() << '\n';
+#endif
+                return false;
+            }
+            m_module_handle[moduleName] = hModule;
+        }
+        std::cout << "Loaded module: " << pit->second << '\n';
+        return true;
+    }
+
+    // Get a function pointer from a loaded module
+    FunctionAddress ModuleManager::getModuleMethod(const std::string& moduleName, const std::string& functionName)
     {
+        auto pit = m_module_handle.find(moduleName);
+        if (pit == m_module_handle.end())
+        {
+            std::cerr << "Module not loaded: " << moduleName << '\n';
+            return nullptr;
+        }
+
+        FunctionAddress func = GetFunctionAddress(pit->second, functionName.c_str());
+        if (func == nullptr)
+        {
+            std::cerr << "Failed to get function: " << functionName << " from module: " << moduleName << '\n';
+        }
+
+        return func;
+    }
+
+    // Release a loaded module
+    void ModuleManager::releaseModuleLib(const std::string& moduleName)
+    {
+        if (m_module_handle.empty())
+        {
+            std::cerr << "No loaded modules\n";
+            return;
+        }
+        auto pit = m_module_handle.find(moduleName);
+        if (pit != m_module_handle.end())
+        {
+            m_factory.releaseModule(moduleName);
+            UnloadLibrary(pit->second);
+            m_module_handle.erase(pit);
+            std::cout << "Released module lib: " << m_module_paths[moduleName] << '\n';
+        }
+        else
+        {
+            std::cerr << "Module lib not loaded: " << moduleName << '\n';
+        }
+    }
+
+    void ModuleManager::releaseModuleInstance(const std::string& moduleName)
+    {
+        this->m_factory.releaseModule(moduleName);
+    }
+
+    // Destructor to ensure all modules are released
+    ModuleManager::~ModuleManager()
+    {
+        m_factory.release();
+        for (const auto& pair : m_module_handle)
+        {
+            UnloadLibrary(pair.second);
+        }
+        m_module_handle.clear();
+    }
+
+    // Helper function to get the actual path of a loaded module (DLL)
+    std::string ModuleManager::getModulePath(const std::string& moduleName)
+    {
+        auto pit = m_module_handle.find(moduleName);
+        if (pit == m_module_handle.end())
+        {
+            std::cerr << "Module lib not loaded: " << moduleName << '\n';
+            return "";
+        }
+
+        LibraryHandle hModule = pit->second;
+
+#ifdef _WIN32
+        char path[MAX_PATH];
+        if (GetModuleFileName(hModule, path, MAX_PATH) == 0)
+        {
+            // std::cerr << "Failed to get module path. Error: " << GetLastError() << '\n';
+            return m_module_paths[moduleName];
+        }
+        return {path};
+#else
+        Dl_info info;
+        if (dladdr(hModule, &info) == 0)
+        {
+            // std::cerr << "Failed to get module path. Error: " << dlerror() << '\n';
+            return m_module_paths[moduleName];
+        }
+        return {info.dli_fname};
+#endif
+    }
+
+    std::shared_ptr<ModuleInterface> ModuleManager::getModuleClass(const std::string& moduleName)
+    {
+        auto pit = m_module_handle.find(moduleName);
+        if (pit != m_module_handle.end())
+        {
+            return m_factory.createModule(moduleName);
+        }
         std::cerr << "Module not loaded: " << moduleName << '\n';
         return nullptr;
     }
 
-    FunctionAddress func = GetFunctionAddress(pit->second, functionName.c_str());
-    if (func == nullptr)
+    ModuleManager* ModuleManager::getInstance()
     {
-        std::cerr << "Failed to get function: " << functionName << " from module: " << moduleName << '\n';
+        std::call_once(m_flag, []() { m_instance = std::make_unique<ModuleManager>(); });
+        return m_instance.get();
     }
 
-    return func;
-}
-
-// Release a loaded module
-void ModuleManager::releaseModuleLib(const std::string& moduleName)
-{
-    if (m_module_handle.empty())
+    void ModuleManager::endSession()
     {
-        std::cerr << "No loaded modules\n";
-        return;
-    }
-    auto pit = m_module_handle.find(moduleName);
-    if (pit != m_module_handle.end())
-    {
-        m_factory.releaseModule(moduleName);
-        UnloadLibrary(pit->second);
-        m_module_handle.erase(pit);
-        std::cout << "Released module lib: " << m_module_paths[moduleName] << '\n';
-    }
-    else
-    {
-        std::cerr << "Module lib not loaded: " << moduleName << '\n';
-    }
-}
-
-void ModuleManager::releaseModuleInstance(const std::string& moduleName)
-{
-    this->m_factory.releaseModule(moduleName);
-}
-
-// Destructor to ensure all modules are released
-ModuleManager::~ModuleManager()
-{
-    m_factory.release();
-    for (const auto& pair : m_module_handle)
-    {
-        UnloadLibrary(pair.second);
-    }
-    m_module_handle.clear();
-}
-
-// Helper function to get the actual path of a loaded module (DLL)
-std::string ModuleManager::getModulePath(const std::string& moduleName)
-{
-    auto pit = m_module_handle.find(moduleName);
-    if (pit == m_module_handle.end())
-    {
-        std::cerr << "Module lib not loaded: " << moduleName << '\n';
-        return "";
+        m_factory.release();
     }
 
-    LibraryHandle hModule = pit->second;
+    ModuleInterface::ModuleInterface(std::string modulename)
+        : m_moduleName(std::move(modulename)){INDEBUG(std::cout << "Module " << m_moduleName << '\n')}
 
-#ifdef _WIN32
-    char path[MAX_PATH];
-    if (GetModuleFileName(hModule, path, MAX_PATH) == 0)
+          ModuleInterface::~ModuleInterface()
     {
-        // std::cerr << "Failed to get module path. Error: " << GetLastError() << '\n';
-        return m_module_paths[moduleName];
+        INDEBUG(std::cout << "~Module " << m_moduleName << '\n')
     }
-    return {path};
-#else
-    Dl_info info;
-    if (dladdr(hModule, &info) == 0)
-    {
-        // std::cerr << "Failed to get module path. Error: " << dlerror() << '\n';
-        return m_module_paths[moduleName];
-    }
-    return {info.dli_fname};
-#endif
-}
-
-std::shared_ptr<ModuleInterface> ModuleManager::getModuleClass(const std::string& moduleName)
-{
-    auto pit = m_module_handle.find(moduleName);
-    if (pit != m_module_handle.end())
-    {
-        return m_factory.createModule(moduleName);
-    }
-    std::cerr << "Module not loaded: " << moduleName << '\n';
-    return nullptr;
-}
-
-ModuleManager* ModuleManager::getInstance()
-{
-    std::call_once(m_flag, []() { m_instance = std::make_unique<ModuleManager>(); });
-    return m_instance.get();
-}
-
-void ModuleManager::endSession()
-{
-    m_factory.release();
-}
-
-ModuleInterface::ModuleInterface(std::string modulename) : m_moduleName(std::move(modulename))
-{
-    INDEBUG(std::cout << "Module " << m_moduleName << '\n')
-}
-
-ModuleInterface::~ModuleInterface()
-{
-    INDEBUG(std::cout << "~Module " << m_moduleName << '\n')
-}
 } // namespace dld

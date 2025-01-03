@@ -48,7 +48,7 @@ std::unordered_map<std::string, std::string> parse_arguments(int argc, char* arg
 
 void printout_uids();
 
-void genNewSession(const std::optional<std::string> &db_name, const std::optional<std::string> &db_coll_name);
+void genNewSession(const std::optional<std::string>& db_name, const std::optional<std::string>& db_coll_name);
 
 void start_module_execution(const std::string& module_name);
 

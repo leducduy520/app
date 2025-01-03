@@ -32,128 +32,130 @@ typedef void* FunctionAddress;
 #if defined(_MSC_VER)
 #undef max
 #endif
-namespace dld {
-class ModuleInterface
+namespace dld
 {
-protected:
-    const std::string m_moduleName;
-
-public:
-    ModuleInterface(std::string moduleName);
-
-    virtual ~ModuleInterface();
-
-    virtual void execute() = 0;
-    virtual void shutdown() = 0;
-};
-
-template <typename key_type = std::string, typename instance_type = void*>
-class ModuleFactory
-{
-    std::unordered_map<key_type, std::function<std::shared_ptr<instance_type>(void)>> m_module_constructor;
-    std::unordered_map<key_type, std::shared_ptr<instance_type>> m_module_instance;
-
-public:
-    std::shared_ptr<instance_type> createModule(const key_type& moduleName)
+    class ModuleInterface
     {
-        auto fit = m_module_constructor.find(moduleName);
-        if (fit != m_module_constructor.end())
+    protected:
+        const std::string m_moduleName;
+
+    public:
+        ModuleInterface(std::string moduleName);
+
+        virtual ~ModuleInterface();
+
+        virtual void execute() = 0;
+        virtual void shutdown() = 0;
+    };
+
+    template <typename key_type = std::string, typename instance_type = void*>
+    class ModuleFactory
+    {
+        std::unordered_map<key_type, std::function<std::shared_ptr<instance_type>(void)>> m_module_constructor;
+        std::unordered_map<key_type, std::shared_ptr<instance_type>> m_module_instance;
+
+    public:
+        std::shared_ptr<instance_type> createModule(const key_type& moduleName)
         {
-            if (auto search = m_module_instance.find(moduleName); search == m_module_instance.end())
+            auto fit = m_module_constructor.find(moduleName);
+            if (fit != m_module_constructor.end())
             {
-                auto module = fit->second();
-                m_module_instance[moduleName] = module;
+                if (auto search = m_module_instance.find(moduleName); search == m_module_instance.end())
+                {
+                    auto module = fit->second();
+                    m_module_instance[moduleName] = module;
+                }
+                return m_module_instance[moduleName];
             }
-            return m_module_instance[moduleName];
+            return nullptr;
         }
-        return nullptr;
-    }
 
-    void registerModule(const key_type& moduleName, std::function<std::shared_ptr<instance_type>(void)> createFunc)
-    {
-        m_module_constructor[moduleName] = createFunc;
-    }
+        void registerModule(const key_type& moduleName, std::function<std::shared_ptr<instance_type>(void)> createFunc)
+        {
+            m_module_constructor[moduleName] = createFunc;
+        }
 
-    void releaseModule(const key_type& moduleName)
-    {
-        auto search = m_module_instance.find(moduleName);
-        if (search != m_module_instance.end())
+        void releaseModule(const key_type& moduleName)
+        {
+            auto search = m_module_instance.find(moduleName);
+            if (search != m_module_instance.end())
+            {
+                if constexpr (std::is_same<instance_type, ModuleInterface>::value)
+                {
+                    search->second->shutdown();
+                }
+                m_module_instance.erase(search);
+            }
+        }
+
+        void release()
         {
             if constexpr (std::is_same<instance_type, ModuleInterface>::value)
             {
-                search->second->shutdown();
+                for (auto& instance : m_module_instance)
+                {
+                    instance.second->shutdown();
+                }
             }
-            m_module_instance.erase(search);
+            m_module_instance.clear();
+            m_module_constructor.clear();
         }
-    }
+    };
 
-    void release()
+    class ModuleManager
     {
-        if constexpr (std::is_same<instance_type, ModuleInterface>::value)
+    public:
+        // Register a module with its expected path
+
+        void registerModule(const std::string& moduleName, const std::string& modulePath);
+        template <class T, class Y>
+        void registerModuleConstructor(T&& moduleName, Y&& constructor);
+
+        // Load a registered module
+        bool loadModule(const std::string& moduleName);
+
+        // Get a function pointer from a loaded module
+        FunctionAddress getModuleMethod(const std::string& moduleName, const std::string& functionName);
+
+        // Release a loaded module
+        void releaseModuleLib(const std::string& moduleName);
+        void releaseModuleInstance(const std::string& moduleName);
+
+        // Get the actual path of a loaded module
+        std::string getModulePath(const std::string& moduleName);
+
+        std::shared_ptr<ModuleInterface> getModuleClass(const std::string& moduleName);
+
+        static ModuleManager* getInstance();
+
+        void endSession();
+
+        // Destructor to ensure all modules are released
+        ~ModuleManager();
+        ModuleManager() = default;
+
+        friend class ModuleFactory<std::string, ModuleInterface>;
+        friend class ModuleInterface;
+
+    private:
+        static std::unique_ptr<ModuleManager> m_instance;
+        static std::once_flag m_flag;
+        std::unordered_map<std::string, std::string> m_module_paths;
+        std::unordered_map<std::string, LibraryHandle> m_module_handle;
+        ModuleFactory<std::string, ModuleInterface> m_factory;
+    };
+
+    template <typename T>
+    class ModuleRegistar
+    {
+    public:
+        ModuleRegistar(std::string moduleName)
         {
-            for(auto& instance : m_module_instance)
-            {
-                instance.second->shutdown();
-            }
+            ModuleManager::getInstance()->registerModuleConstructor(
+                moduleName,
+                []() -> std::shared_ptr<ModuleInterface> { return std::make_shared<T>(); });
         }
-        m_module_instance.clear();
-        m_module_constructor.clear();
-    }
-};
-
-class ModuleManager
-{
-public:
-    // Register a module with its expected path
-
-    void registerModule(const std::string& moduleName, const std::string& modulePath);
-    template <class T, class Y>
-    void registerModuleConstructor(T&& moduleName, Y&& constructor);
-
-    // Load a registered module
-    bool loadModule(const std::string& moduleName);
-
-    // Get a function pointer from a loaded module
-    FunctionAddress getModuleMethod(const std::string& moduleName, const std::string& functionName);
-
-    // Release a loaded module
-    void releaseModuleLib(const std::string& moduleName);
-    void releaseModuleInstance(const std::string& moduleName);
-
-    // Get the actual path of a loaded module
-    std::string getModulePath(const std::string& moduleName);
-
-    std::shared_ptr<ModuleInterface> getModuleClass(const std::string& moduleName);
-
-    static ModuleManager* getInstance();
-
-    void endSession();
-
-    // Destructor to ensure all modules are released
-    ~ModuleManager();
-    ModuleManager() = default;
-
-    friend class ModuleFactory<std::string, ModuleInterface>;
-    friend class ModuleInterface;
-private:
-    static std::unique_ptr<ModuleManager> m_instance;
-    static std::once_flag m_flag;
-    std::unordered_map<std::string, std::string> m_module_paths;
-    std::unordered_map<std::string, LibraryHandle> m_module_handle;
-    ModuleFactory<std::string, ModuleInterface> m_factory;
-};
-
-template <typename T>
-class ModuleRegistar
-{
-public:
-    ModuleRegistar(std::string moduleName)
-    {
-        ModuleManager::getInstance()->registerModuleConstructor(moduleName, []() -> std::shared_ptr<ModuleInterface> {
-            return std::make_shared<T>();
-        });
-    }
-};
+    };
 
 #if defined(_WIN32)
 #define REGISTER_MODULE_LOCATION(moduleName, modulePath)                                                               \
@@ -166,10 +168,11 @@ public:
 #define REGISTER_MODULE_CLASS(moduleclass, moduleName)                                                                 \
     static const ModuleRegistar<moduleclass> register##moduleclass(moduleName);
 
-template <class T, class Y>
-inline void ModuleManager::registerModuleConstructor(T&& moduleName, Y&& constructor)
-{
-    ModuleManager::getInstance()->m_factory.registerModule(std::forward<T>(moduleName), std::forward<Y>(constructor));
-}
+    template <class T, class Y>
+    inline void ModuleManager::registerModuleConstructor(T&& moduleName, Y&& constructor)
+    {
+        ModuleManager::getInstance()->m_factory.registerModule(std::forward<T>(moduleName),
+                                                               std::forward<Y>(constructor));
+    }
 } // namespace dld
 #endif // __MODULE_MANAGER_H__

@@ -3,9 +3,10 @@ function(REGISTER_MODULE_LIB moduleid)
     target_compile_definitions(${moduleid} PUBLIC NAME="${moduleid}")
     get_property(module_registar GLOBAL PROPERTY LIST_REGISTER_MODULE)
     set_property(
-        GLOBAL PROPERTY LIST_REGISTER_MODULE
-        "${module_registar} \n\tREGISTER_MODULE_LOCATION(${moduleid}, ${moduleid});"
-    )
+        GLOBAL
+        PROPERTY LIST_REGISTER_MODULE
+                 "${module_registar} \n\tREGISTER_MODULE_LOCATION(${moduleid}, ${moduleid});"
+        )
 
     string(TOUPPER "${moduleid}" moduleid_upper)
     get_property(module_enum GLOBAL PROPERTY LIST_REGISTER_MODULE_ENUM)
@@ -32,7 +33,7 @@ macro(regist_module module_name)
     cmake_path(
         RELATIVE_PATH CMAKE_CURRENT_LIST_DIR BASE_DIRECTORY ${CMAKE_SOURCE_DIR} OUTPUT_VARIABLE
         REL_PATH
-    )
+        )
 
     file(GLOB_RECURSE SOURCE_FILES "*.cpp")
     file(GLOB_RECURSE HEADER_FILES "*.hpp")
@@ -61,8 +62,8 @@ macro(regist_module module_name)
     target_link_libraries(${module_name} PRIVATE common)
     target_include_directories(
         ${module_name} PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}>
-        $<BUILD_INTERFACE:${DIR_LIST}>
-    )
+                               $<BUILD_INTERFACE:${DIR_LIST}>
+        )
 
     if(THIS_COMPILER_GCC OR THIS_COMPILER_CLANG)
         set_target_properties(${module_name} PROPERTIES PREFIX "")
@@ -76,5 +77,5 @@ macro(regist_module module_name)
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT Runtime
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT Runtime
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT Development
-    )
+        )
 endmacro(regist_module module_name)

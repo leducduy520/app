@@ -11,7 +11,7 @@ using namespace std::literals::string_literals;
 
 namespace dld
 {
-    void SimpleRestfulAPI::setHeaders(const http_headers &headers)
+    void SimpleRestfulAPI::setHeaders(const http_headers& headers)
     {
         m_api_request.headers() = headers;
         m_api_request.headers().set_content_type(U("application/json"));
@@ -112,14 +112,13 @@ namespace dld
 
     namespace record
     {
-        uri_builder::uri_builder(const utility::string_t& base_uri)
-            :value(base_uri)
+        uri_builder::uri_builder(const utility::string_t& base_uri) : value(base_uri)
         {}
 
         uri_builder& uri_builder::records(const utility::string_t& record_id)
         {
             this->value.append(U("/records"));
-            if(!record_id.empty())
+            if (!record_id.empty())
             {
                 this->value.append(U("/")) += record_id;
             }
@@ -129,24 +128,24 @@ namespace dld
         uri_builder& uri_builder::history(const utility::string_t& history_id)
         {
             this->value.append(U("/history"));
-            if(!history_id.empty())
+            if (!history_id.empty())
             {
                 this->value.append(U("/")) += history_id;
             }
             return *this;
         }
 
-        uri_builder & uri_builder::history(const bsoncxx::types::b_oid & history_id)
+        uri_builder& uri_builder::history(const bsoncxx::types::b_oid& history_id)
         {
             this->value.append(U("/history"));
             this->value.append(U("/")) += utility::conversions::to_string_t(history_id.value.to_string());
             return *this;
         }
 
-        uri_builder& uri_builder::modules(const utility::string_t &module_id)
+        uri_builder& uri_builder::modules(const utility::string_t& module_id)
         {
             this->value.append(U("modules"));
-            if(!module_id.empty())
+            if (!module_id.empty())
             {
                 this->value.append(U("/")) += module_id;
             }
@@ -154,9 +153,7 @@ namespace dld
         }
 
         RecordRequest::RecordRequest()
-        {
-            
-        }
+        {}
 
         pplx::task<web::json::value> RecordRequest::get(const uri_builder& x_url)
         {

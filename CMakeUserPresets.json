@@ -4,19 +4,16 @@
         {
             "name": "base",
             "hidden": true,
-            "inherits": [
-                "vcpkg"
-            ],
             "cacheVariables": {
                 "X_VCPKG_APPLOCAL_DEPS_INSTALL": true
-            }
+            },
+            "inherits": [
+                "vcpkg"
+            ]
         },
         {
             "name": "base-linux",
             "hidden": true,
-            "inherits": [
-                "base"
-            ],
             "environment": {
                 "VCPKG_ROOT": "/vcpkg",
                 "PATH": "$env{VCPKG_ROOT}:$penv{PATH}"
@@ -25,14 +22,23 @@
                 "type": "equals",
                 "lhs": "${hostSystemName}",
                 "rhs": "Linux"
-            }
+            },
+            "inherits": [
+                "base"
+            ]
         },
         {
             "name": "base-windows",
             "hidden": true,
-            "inherits": [
-                "base"
-            ],
+            "generator": "Visual Studio 17 2022",
+            "toolset":{
+                "strategy": "set",
+                "value": "CLangCL"
+            },
+            "architecture":{
+                "strategy": "set",
+                "value": "x64"
+            },
             "environment": {
                 "VCPKG_ROOT": "C:/vcpkg",
                 "PATH": "$env{VCPKG_ROOT};$penv{PATH}"
@@ -42,10 +48,9 @@
                 "lhs": "${hostSystemName}",
                 "rhs": "Windows"
             },
-            "cacheVariables": {
-                "CMAKE_CXX_COMPILER": "clang-cl.exe",
-                "CMAKE_C_COMPILER": "clang-cl.exe"
-            }
+            "inherits": [
+                "base"
+            ]
         },
         {
             "name": "linux-dbg",
@@ -67,15 +72,15 @@
         {
             "name": "windows-dbg",
             "inherits": [
-                "base-windows",
-                "debug"
+                "debug",
+                "base-windows"
             ]
         },
         {
             "name": "windows-rel",
             "inherits": [
-                "base-windows",
-                "release"
+                "release",
+                "base-windows"
             ],
             "cacheVariables": {
                 "VCPKG_TARGET_TRIPLET": "x64-windows-release"

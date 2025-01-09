@@ -1,46 +1,30 @@
-function(add_project_documentation)
+function(build_html_document BASEDIR)
     find_package(Doxygen QUIET COMPONENTS dot doxygen)
 
     if(NOT Doxygen_FOUND)
         return()
     endif()
 
-    set(DOCS_DIR ${CMAKE_SOURCE_DIR}/docs)
-    set(DOCS_HTML_DIR ${DOCS_DIR}/html CACHE PATH "project html directory")
-    set(DOCS_GRAPH_DIR ${DOCS_DIR}/graph CACHE PATH "project graph directory")
+    add_custom_target(
+        gen_doc
+        COMMAND ${DOXYGEN_EXECUTABLE} ./docCfg
+        COMMENT "Generate project html document."
+        WORKING_DIRECTORY ${BASEDIR}
+    )
+    set_target_properties(gen_doc PROPERTIES FOLDER "Document")
+endfunction()
 
-    if(BUILD_HIERARCHY_GRAPH)
-        add_custom_command(
-            OUTPUT ${DOCS_GRAPH_DIR}/module_app.png
-            COMMAND ${DOXYGEN_DOT_EXECUTABLE} -v -Tpng graph.dot -o module_app.png
-            WORKING_DIRECTORY ${DOCS_GRAPH_DIR}
-            VERBATIM USES_TERMINAL
-            )
+function(build_dependencies_graph BASEDIR NAME)
+    add_custom_command(
+        OUTPUT ${BASEDIR}/${NAME}.png
+        COMMAND ${DOXYGEN_DOT_EXECUTABLE} -v -Tpng graph.dot -o ${NAME}.png
+        WORKING_DIRECTORY ${DOCS_GRAPH_DIR}
+        VERBATIM USES_TERMINAL
+    )
 
-        add_custom_target(
-            gen_graph COMMENT "Generate project graph dependencies"
-            DEPENDS ${DOCS_GRAPH_DIR}/module_app.png
-            )
-        set_target_properties(gen_graph PROPERTIES FOLDER "Custom target")
-    endif(BUILD_HIERARCHY_GRAPH)
-
-    if(BUILD_WEB_DOC)
-        add_custom_target(
-            gen_doc
-            COMMAND ${DOXYGEN_EXECUTABLE} ./docCfg
-            COMMENT "Generate project document"
-            WORKING_DIRECTORY ${DOCS_DIR}
-            )
-        set_target_properties(gen_doc PROPERTIES FOLDER "Custom target")
-    endif(BUILD_WEB_DOC)
-
-    if(INSTALL_HIERARCHY_GRAPH)
-        install(
-            FILES ${DOCS_GRAPH_DIR}/module_app.png DESTINATION ${CMAKE_INSTALL_DATADIR}/MySFMLApp
-            )
-    endif(INSTALL_HIERARCHY_GRAPH)
-
-    if(INSTALL_WEB_DOC)
-        install(DIRECTORY ${DOCS_HTML_DIR} DESTINATION ${CMAKE_INSTALL_DATADIR}/MySFMLApp)
-    endif(INSTALL_WEB_DOC)
+    add_custom_target(
+        gen_graph COMMENT "Generate project dependencies graph."
+        DEPENDS ${BASEDIR}/${NAME}.png
+    )
+    set_target_properties(gen_graph PROPERTIES FOLDER "Document")
 endfunction()

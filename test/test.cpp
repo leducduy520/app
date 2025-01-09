@@ -27,16 +27,16 @@ TEST_F(ApiTestCase, MongoEnvVariables)
 
 TEST_F(ApiTestCase, ConnectToMongoDatabase)
 {
-    EXPECT_NO_THROW(dld::DBClient::GetInstance()->Connect(dld::get_database_uri().value()));
-    dld::DBClient::GetInstance()->GetDatabase(dld::get_database_name().value());
-    dld::DBClient::GetInstance()->GetCollection(dld::get_database_collection_name().value());
+    EXPECT_NO_THROW(dld::DBClient::GetInstance()->Connect(dld::get_database_uri().value_or("")));
+    EXPECT_NO_THROW(dld::DBClient::GetInstance()->GetDatabase(dld::get_database_name().value_or("")));
+    EXPECT_NO_THROW(dld::DBClient::GetInstance()->GetCollection(dld::get_database_collection_name().value_or("")));
 }
 
 TEST_F(ApiTestCase, APIService)
 {
     using namespace dld::record;
     auto base_url = utility::conversions::to_string_t(dld::get_api_base_uri().value_or("http://localhost:3000"));
-    ucerr << "api base url: " << base_url << std::endl;
+    ucerr << "api base url: " << base_url << '\n';
     {
         const web::http::uri url(base_url + U("/records"));
         web::http::client::http_client client(url);

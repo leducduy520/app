@@ -7,6 +7,7 @@ FetchContent_Declare(
 )
 
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+set(INSTALL_GTEST OFF)
 FetchContent_MakeAvailable(googletest)
 
 add_executable(${PROJECT_NAME} test.cpp)
@@ -35,6 +36,8 @@ if(ENABLE_COVERAGE)
         "${PROJECT_SOURCE_DIR}/docs/*"
         "${PROJECT_SOURCE_DIR}/test/*"
         "${PROJECT_SOURCE_DIR}/build/*"
+        "${PROJECT_SOURCE_DIR}/build/vcpkg_installed/*"
+        "${PROJECT_SOURCE_DIR}/build/_deps/*"
         "${PROJECT_SOURCE_DIR}/install/*"
         "/usr/include/*")
     set(COVERAGE_EXTRA_FLAGS)

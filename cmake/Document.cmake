@@ -17,8 +17,8 @@ endfunction()
 function(build_dependencies_graph BASEDIR NAME)
     add_custom_command(
         OUTPUT ${BASEDIR}/${NAME}.png
-        COMMAND ${DOXYGEN_DOT_EXECUTABLE} -v -Tpng graph.dot -o ${NAME}.png
-        WORKING_DIRECTORY ${DOCS_GRAPH_DIR}
+        COMMAND ${DOXYGEN_DOT_EXECUTABLE} -v -Tpng ${BASEDIR}/graph.dot -o ${BASEDIR}/${NAME}.png
+        WORKING_DIRECTORY ${BASEDIR}
         VERBATIM USES_TERMINAL
     )
 

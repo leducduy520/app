@@ -88,7 +88,7 @@ if(ENABLE_HTML_DOCUMENT OR ENABLE_DEPENDENCIES_GRAPH)
     endif()
 
     if(ENABLE_DEPENDENCIES_GRAPH)
-        build_dependencies_graph(${CMAKE_SOURCE_DIR}/docs/graph)
+        build_dependencies_graph(${CMAKE_SOURCE_DIR}/docs/graph "${PROJECT_NAME}")
     endif()
 endif()
 

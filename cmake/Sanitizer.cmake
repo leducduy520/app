@@ -1,9 +1,5 @@
-function(add_sanitizer_flags)
-    if(NOT ENABLE_SANITIZE_ADDR AND NOT ENABLE_SANITIZE_UNDEF)
-        return()
-    endif()
-
-    if(CMAKE_CXX_COMPILER_ID MATCHES "Clang" OR CMAKE_CXX_COMPILER_ID MATCHES "GNU")
+function(add_sanitizer_flags ENABLE_SANITIZE_ADDR ENABLE_SANITIZE_UNDEF ENABLE_SANITIZE_LEAK ENABLE_SANITIZE_THREAD)
+    if(THIS_COMPILER_CLANG OR THIS_COMPILER_GCC)
         add_compile_options("-fno-omit-frame-pointer")
         add_link_options("-fno-omit-frame-pointer")
 
@@ -28,6 +24,7 @@ function(add_sanitizer_flags)
             if(ENABLE_SANITIZE_ADDR OR ENABLE_SANITIZE_LEAK)
                 message(WARNING "thread does not work with: address and leak")
             endif()
+
             message(STATUS "Activating Thread Sanitizer")
             add_compile_options("-fsanitize=thread")
             add_link_options("-fsanitize=thread")

@@ -8,19 +8,27 @@ include(TestCXXAcceptsFlag)
 include(CMakePackageConfigHelpers)
 include(CMakeDependentOption)
 
-option(BUILD_TEST "enable build test executable" ON)
-option(BUILD_CMAKE_FORMAT "enable cmake format" OFF)
-option(BUILD_HIERARCHY_GRAPH "build graph" OFF)
-option(BUILD_WEB_DOC "build documentation" OFF)
-option(BUILD_CLANG_FORMAT "enable clang format" OFF)
+option(ENABLE_TESTING "Enable a Unit Testing build." ON)
+option(ENABLE_COVERAGE "Enable a Code Coverage build." OFF)
+
+option(ENABLE_DEPENDENCIES_GRAPH "build graph" OFF)
+option(ENABLE_HTML_DOCUMENT "build documentation" OFF)
+
+option(ENABLE_CMAKE_FORMAT "enable cmake format" OFF)
+option(ENABLE_CLANG_FORMAT "Enable to add clang-format." OFF)
+
 option(ENABLE_WARNINGS "enable warnings" ON)
 option(ENABLE_WARNINGS_AS_ERRORS "enable warnings as errors" OFF)
-option(ENABLE_CLANG_TIDY "enable clang tidy" OFF)
-option(ENABLE_SANITIZE_ADDR "enable address sanitizer" OFF)
-option(ENABLE_SANITIZE_UNDEF "enable undefined behavior sanitizer" OFF)
 
-cmake_dependent_option(INSTALL_HIERARCHY_GRAPH "install docs" OFF "NOT BUILD_WEB_DOC" OFF)
-cmake_dependent_option(INSTALL_HIERARCHY_GRAPH "install graph" OFF "NOT BUILD_HIERARCHY_GRAPH" OFF)
+option(ENABLE_CLANG_TIDY "Enable to add clang tidy." OFF)
+
+option(ENABLE_SANITIZE_ADDR "Enable address sanitize." OFF)
+option(ENABLE_SANITIZE_UNDEF "Enable undefined sanitize." OFF)
+option(ENABLE_SANITIZE_LEAK "Enable leak sanitize (Gcc/Clang only)." OFF)
+option(ENABLE_SANITIZE_THREAD "Enable thread sanitize (Gcc/Clang only)." OFF)
+
+cmake_dependent_option(INSTALL_DEPENDENCIES_GRAPH "install docs" ON "NOT ENABLE_DEPENDENCIES_GRAPH" OFF)
+cmake_dependent_option(INSTALL_HTML_DOCUMENT "install graph" ON "NOT ENABLE_HTML_DOCUMENT" OFF)
 
 # Set CXX standard
 set(CMAKE_CXX_STANDARD 17)
@@ -44,29 +52,55 @@ if(THIS_MULTI_CONFIG)
         string(TOUPPER ${build_type} build_type_upper)
         set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_${build_type_upper}
             ${CMAKE_BINARY_DIR}/${build_type}/lib
-            )
+        )
         set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_${build_type_upper}
             ${CMAKE_BINARY_DIR}/${build_type}/lib
-            )
+        )
         set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_${build_type_upper}
             ${CMAKE_BINARY_DIR}/${build_type}/bin
-            )
+        )
     endforeach()
 endif()
 
 add_compile_definitions(_CRT_SECURE_NO_WARNINGS)
 
 include(Config)
-include(Tools)
-include(Document)
 include(Warnings)
-include(Sanitizer)
 include(RegistModule)
 
-build_clang_format_target("${CMAKE_SOURCE_DIR}/(build|install|tools|docs|mongo|.github)/+")
-build_cmake_format_target("${CMAKE_SOURCE_DIR}/(build|install|tools|docs|mongo|.github)/+")
-add_project_documentation()
-add_sanitizer_flags()
+if(ENABLE_CLANG_FORMAT OR ENABLE_CMAKE_FORMAT)
+    include(Tools)
+
+    if(ENABLE_CLANG_FORMAT)
+        build_clang_format_target("${CMAKE_SOURCE_DIR}/(build|install|tools|docs|node|.github)/+")
+    endif()
+
+    if(ENABLE_CMAKE_FORMAT)
+        build_cmake_format_target("${CMAKE_SOURCE_DIR}/(build|install|tools|docs|node|.github)/+")
+    endif()
+endif()
+
+if(ENABLE_HTML_DOCUMENT OR ENABLE_DEPENDENCIES_GRAPH)
+    include(Document)
+
+    if(ENABLE_HTML_DOCUMENT)
+        build_html_document(${CMAKE_SOURCE_DIR}/docs)
+    endif()
+
+    if(ENABLE_DEPENDENCIES_GRAPH)
+        build_dependencies_graph(${CMAKE_SOURCE_DIR}/docs/graph "${PROJECT_NAME}")
+    endif()
+endif()
+
+if(ENABLE_SANITIZE_ADDR OR ENABLE_SANITIZE_UNDEF)
+    include(Sanitizer)
+    add_sanitizer_flags(${ENABLE_SANITIZE_ADDR} ${ENABLE_SANITIZE_UNDEF} ${ENABLE_SANITIZE_LEAK} ${ENABLE_SANITIZE_THREAD})
+endif()
+
+if(ENABLE_TESTING AND ENABLE_COVERAGE)
+    include(CodeCoverage)
+    append_coverage_compiler_flags()
+endif()
 
 if(THIS_OS_LINUX)
     set(CMAKE_INSTALL_RPATH ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR})
@@ -75,10 +109,10 @@ endif(THIS_OS_LINUX)
 add_subdirectory(src)
 add_subdirectory(app)
 
-if(BUILD_TEST)
+if(ENABLE_TESTING)
     include(CTest)
     enable_testing()
     add_subdirectory(test)
-endif(BUILD_TEST)
+endif(ENABLE_TESTING)
 
 write_register_module_lib()

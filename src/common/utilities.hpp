@@ -78,34 +78,38 @@ namespace dld
         }
     }
 
-    inline std::string getEnv(const std::string& name)
+    inline bsoncxx::stdx::optional<std::string> getEnv(const std::string& name)
     {
         const char* value = std::getenv(name.c_str());
         if (value != nullptr)
         {
             return value;
         }
-        return "";
+        return {};
     }
 
     inline bsoncxx::stdx::optional<std::string> get_database_collection_name()
     {
-        return getEnv("MONGODB_COLL");
+        static auto res = getEnv("MONGODB_COLL");
+        return res;
     }
 
     inline bsoncxx::stdx::optional<std::string> get_database_name()
     {
-        return getEnv("MONGODB_NAME");
+        static auto res = getEnv("MONGODB_NAME");
+        return res;
     }
 
     inline bsoncxx::stdx::optional<std::string> get_database_uri()
     {
-        return getEnv("MONGODB_URI");
+        static auto res = getEnv("MONGODB_URI");
+        return res;
     }
 
     inline bsoncxx::stdx::optional<std::string> get_api_base_uri()
     {
-        return getEnv("API_BASE_URI");
+        static auto res = getEnv("API_BASE_URI");
+        return res;
     }
 } // namespace dld
 #endif

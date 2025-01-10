@@ -19,7 +19,7 @@ set_target_properties(
 set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER "Test")
 
 include(GoogleTest)
-gtest_discover_tests(${PROJECT_NAME})
+gtest_discover_tests(${PROJECT_NAME} PROPERTIES WORKING_DIRECTORY $<TARGET_FILE_DIR:${PROJECT_NAME}>)
 
 install(
     TARGETS ${PROJECT_NAME}
@@ -36,8 +36,6 @@ if(ENABLE_COVERAGE)
         "${PROJECT_SOURCE_DIR}/docs/*"
         "${PROJECT_SOURCE_DIR}/test/*"
         "${PROJECT_SOURCE_DIR}/build/*"
-        "${PROJECT_SOURCE_DIR}/build/vcpkg_installed/*"
-        "${PROJECT_SOURCE_DIR}/build/_deps/*"
         "${PROJECT_SOURCE_DIR}/install/*"
         "/usr/include/*")
     set(COVERAGE_EXTRA_FLAGS)
@@ -48,6 +46,8 @@ if(ENABLE_COVERAGE)
         ${COVERAGE_MAIN}
         EXECUTABLE
         ctest
+        EXECUTABLE_ARGS
+        --output-on-failure
         DEPENDENCIES
         ${COVERAGE_DEPENDENCIES}
         BASE_DIRECTORY

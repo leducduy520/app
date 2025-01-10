@@ -59,8 +59,8 @@ namespace dld
         }
     }
 
-    template <typename T, typename Y>
-    inline void print_in_columns(const T& array, int columns, Y print)
+    template <typename T, typename Element = typename T::value_type>
+    inline void print_in_columns(const T& array, int columns, std::function<void(const Element&)> print)
     {
         int count = 0;
         for (const auto& item : array)

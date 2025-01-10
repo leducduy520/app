@@ -51,7 +51,7 @@ namespace dld
         std::mutex queue_mutex;
         std::condition_variable condition;
         std::atomic<bool> stop_flag;
-        std::atomic<int> idle_threads;
+        std::atomic<size_t> idle_threads;
 
         static std::unique_ptr<ThreadPool> pool;
         static std::once_flag creat_flag;

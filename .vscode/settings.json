@@ -185,7 +185,8 @@
   "C_Cpp.codeAnalysis.clangTidy.checks.disabled": [
     "cppcoreguidelines-owning-memory",
     "readability-isolate-declaration",
-    "cppcoreguidelines-avoid-goto"
+    "cppcoreguidelines-avoid-goto",
+    "readability-function-cognitive-complexity"
   ],
   "cmake.parallelJobs": 8,
   "cmake.setBuildTypeOnMultiConfig": false,

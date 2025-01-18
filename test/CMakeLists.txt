@@ -4,7 +4,7 @@ include(FetchContent)
 FetchContent_Declare(
     googletest
     URL https://github.com/google/googletest/archive/03597a01ee50ed33e9dfd640b249b4be3799d395.zip
-)
+    )
 
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 set(INSTALL_GTEST OFF)
@@ -15,18 +15,20 @@ target_link_libraries(${PROJECT_NAME} PRIVATE common GTest::gtest_main GTest::gm
 
 set_target_properties(
     ${PROJECT_NAME} PROPERTIES INSTALL_RPATH ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}
-)
+    )
 set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER "Test")
 
 include(GoogleTest)
-gtest_discover_tests(${PROJECT_NAME} PROPERTIES WORKING_DIRECTORY $<TARGET_FILE_DIR:${PROJECT_NAME}>)
+gtest_discover_tests(
+    ${PROJECT_NAME} PROPERTIES WORKING_DIRECTORY $<TARGET_FILE_DIR:${PROJECT_NAME}>
+    )
 
 install(
     TARGETS ${PROJECT_NAME}
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT Runtime
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT Development
     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT Development
-)
+    )
 
 if(ENABLE_COVERAGE)
     set(COVERAGE_MAIN "coverage")
@@ -37,7 +39,8 @@ if(ENABLE_COVERAGE)
         "${PROJECT_SOURCE_DIR}/test/*"
         "${PROJECT_SOURCE_DIR}/build/*"
         "${PROJECT_SOURCE_DIR}/install/*"
-        "/usr/include/*")
+        "/usr/include/*"
+        )
     set(COVERAGE_EXTRA_FLAGS)
     set(COVERAGE_DEPENDENCIES "${PROJECT_NAME}")
 
@@ -51,5 +54,6 @@ if(ENABLE_COVERAGE)
         DEPENDENCIES
         ${COVERAGE_DEPENDENCIES}
         BASE_DIRECTORY
-        ${CMAKE_SOURCE_DIR})
+        ${CMAKE_SOURCE_DIR}
+        )
 endif()

@@ -53,15 +53,11 @@ set(CMAKE_C_FLAGS_COVERAGE ${COVERAGE_COMPILER_FLAGS} FORCE)
 set(CMAKE_EXE_LINKER_FLAGS_COVERAGE "-lgcov" FORCE)
 set(CMAKE_SHARED_LINKER_FLAGS_COVERAGE "" FORCE)
 mark_as_advanced(
-    CMAKE_CXX_FLAGS_COVERAGE
-    CMAKE_C_FLAGS_COVERAGE
-    CMAKE_EXE_LINKER_FLAGS_COVERAGE
-    CMAKE_SHARED_LINKER_FLAGS_COVERAGE)
+    CMAKE_CXX_FLAGS_COVERAGE CMAKE_C_FLAGS_COVERAGE CMAKE_EXE_LINKER_FLAGS_COVERAGE
+    CMAKE_SHARED_LINKER_FLAGS_COVERAGE
+    )
 
-if(NOT
-    CMAKE_BUILD_TYPE
-    STREQUAL
-    "Debug")
+if(NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
     message(WARNING "Cov results with non-Debug build may be misleading")
 endif()
 
@@ -80,17 +76,8 @@ function(setup_target_for_coverage_gcovr_html)
 
     set(options NONE)
     set(oneValueArgs BASE_DIRECTORY NAME)
-    set(multiValueArgs
-        EXCLUDE
-        EXECUTABLE
-        EXECUTABLE_ARGS
-        DEPENDENCIES)
-    cmake_parse_arguments(
-        Coverage
-        "${options}"
-        "${oneValueArgs}"
-        "${multiValueArgs}"
-        ${ARGN})
+    set(multiValueArgs EXCLUDE EXECUTABLE EXECUTABLE_ARGS DEPENDENCIES)
+    cmake_parse_arguments(Coverage "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
     # Set base directory (as absolute path), or default to PROJECT_SOURCE_DIR
     if(DEFINED Coverage_BASE_DIRECTORY)
@@ -102,15 +89,9 @@ function(setup_target_for_coverage_gcovr_html)
     # Collect excludes (CMake 3.4+: Also compute absolute paths)
     set(GCOVR_EXCLUDES "")
 
-    foreach(EXCLUDE ${Coverage_EXCLUDE} ${COVERAGE_EXCLUDES}
-        ${COVERAGE_GCOVR_EXCLUDES})
+    foreach(EXCLUDE ${Coverage_EXCLUDE} ${COVERAGE_EXCLUDES} ${COVERAGE_GCOVR_EXCLUDES})
         if(CMAKE_VERSION VERSION_GREATER 3.4)
-            get_filename_component(
-                EXCLUDE
-                ${EXCLUDE}
-                ABSOLUTE
-                BASE_DIR
-                ${BASEDIR})
+            get_filename_component(EXCLUDE ${EXCLUDE} ABSOLUTE BASE_DIR ${BASEDIR})
         endif()
 
         list(APPEND GCOVR_EXCLUDES "${EXCLUDE}")
@@ -127,22 +108,15 @@ function(setup_target_for_coverage_gcovr_html)
     endforeach()
 
     # Set up commands which will be run to generate coverage data Run tests
-    set(GCOVR_HTML_EXEC_TESTS_CMD ${Coverage_EXECUTABLE}
-        ${Coverage_EXECUTABLE_ARGS})
+    set(GCOVR_HTML_EXEC_TESTS_CMD ${Coverage_EXECUTABLE} ${Coverage_EXECUTABLE_ARGS})
 
     # Create folder
-    set(GCOVR_HTML_FOLDER_CMD
-        ${CMAKE_COMMAND}
-        -E
-        make_directory
-        ${PROJECT_BINARY_DIR}/${Coverage_NAME})
+    set(GCOVR_HTML_FOLDER_CMD ${CMAKE_COMMAND} -E make_directory
+                              ${PROJECT_BINARY_DIR}/${Coverage_NAME}
+        )
 
     # Running gcovr
-    set(GCOVR_EXTRA_FLAGS
-        --json-summary
-        --json-summary-pretty
-        --html-theme
-        github.dark-green)
+    set(GCOVR_EXTRA_FLAGS --json-summary --json-summary-pretty --html-theme github.dark-green)
     set(GCOVR_HTML_CMD
         ${GCOVR_PATH}
         ${GCOVR_EXTRA_FLAGS}
@@ -160,7 +134,8 @@ function(setup_target_for_coverage_gcovr_html)
         ${BASEDIR}
         ${GCOVR_ADDITIONAL_ARGS}
         ${GCOVR_EXCLUDE_ARGS}
-        --object-directory=${PROJECT_BINARY_DIR})
+        --object-directory=${PROJECT_BINARY_DIR}
+        )
 
     add_custom_target(
         ${Coverage_NAME}
@@ -168,32 +143,24 @@ function(setup_target_for_coverage_gcovr_html)
         COMMAND ${GCOVR_HTML_FOLDER_CMD}
         COMMAND ${GCOVR_HTML_CMD}
         BYPRODUCTS ${PROJECT_BINARY_DIR}/${Coverage_NAME}/index.html # report
-
         # directory
         WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
         DEPENDS ${Coverage_DEPENDENCIES}
         VERBATIM # Protect arguments to commands
-        COMMENT "Running gcovr to produce HTML code coverage report.")
+        COMMENT "Running gcovr to produce HTML code coverage report."
+        )
 
     # Show info where to find the report
     add_custom_command(
         TARGET ${Coverage_NAME}
         POST_BUILD
         COMMAND ;
-        COMMENT
-        "Open ./${Coverage_NAME}/index.html in your browser to view the coverage report."
-    )
+        COMMENT "Open ./${Coverage_NAME}/index.html in your browser to view the coverage report."
+        )
 endfunction() # setup_target_for_coverage_gcovr_html
 
 function(append_coverage_compiler_flags)
-    set(CMAKE_C_FLAGS
-        "${CMAKE_C_FLAGS} ${COVERAGE_COMPILER_FLAGS}"
-        PARENT_SCOPE)
-    set(CMAKE_CXX_FLAGS
-        "${CMAKE_CXX_FLAGS} ${COVERAGE_COMPILER_FLAGS}"
-        PARENT_SCOPE)
-    message(
-        STATUS
-        "Appending code coverage compiler flags: ${COVERAGE_COMPILER_FLAGS}"
-    )
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${COVERAGE_COMPILER_FLAGS}" PARENT_SCOPE)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${COVERAGE_COMPILER_FLAGS}" PARENT_SCOPE)
+    message(STATUS "Appending code coverage compiler flags: ${COVERAGE_COMPILER_FLAGS}")
 endfunction()

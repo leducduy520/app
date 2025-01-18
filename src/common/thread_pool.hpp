@@ -58,9 +58,8 @@ namespace dld
     };
 
     template <class F, class... Args>
-    auto ThreadPool::submit(int priority,
-                            F&& f,
-                            Args&&... args) -> std::future<typename std::result_of<F(Args...)>::type>
+    auto ThreadPool::submit(int priority, F&& f, Args&&... args)
+        -> std::future<typename std::result_of<F(Args...)>::type>
     {
 
         using return_type = typename std::invoke_result<F, Args...>::type;

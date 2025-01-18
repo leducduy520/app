@@ -70,8 +70,10 @@ TEST_F(TestCase, ThreadPool)
         EXPECT_NO_THROW(fut.get());
     }
 
-    futures.emplace_back(
-        pool->submit(100, [](unsigned int ms) { throw std::runtime_error("Thrown when trying to submit"); }, 100));
+    futures.emplace_back(pool->submit(
+        100,
+        [](unsigned int ms) { throw std::runtime_error("Thrown when trying to submit"); },
+        100));
 
     EXPECT_THROW(futures.back().get(), std::runtime_error);
 }
@@ -81,11 +83,11 @@ TEST_F(TestCase, ModuleManager)
     auto manager = dld::ModuleManager::getInstance();
     std::string namemodule = "games";
     manager->registerModule(namemodule, "games.so");
-    EXPECT_TRUE(manager->loadModule(namemodule));
+    ASSERT_TRUE(manager->loadModule(namemodule));
     auto create = manager->getModuleMethod(namemodule, "createGame");
-    EXPECT_TRUE(create!= nullptr);
+    ASSERT_TRUE(create != nullptr);
     // Define a function pointer type matching the signature
-    typedef void* (*CreatFunction)(const char *);
+    typedef void* (*CreatFunction)(const char*);
 
     // Cast the symbol to the function pointer
     CreatFunction GameCreate = reinterpret_cast<CreatFunction>(create);

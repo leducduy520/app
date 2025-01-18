@@ -27,7 +27,9 @@ option(ENABLE_SANITIZE_UNDEF "Enable undefined sanitize." OFF)
 option(ENABLE_SANITIZE_LEAK "Enable leak sanitize (Gcc/Clang only)." OFF)
 option(ENABLE_SANITIZE_THREAD "Enable thread sanitize (Gcc/Clang only)." OFF)
 
-cmake_dependent_option(INSTALL_DEPENDENCIES_GRAPH "install docs" ON "NOT ENABLE_DEPENDENCIES_GRAPH" OFF)
+cmake_dependent_option(
+    INSTALL_DEPENDENCIES_GRAPH "install docs" ON "NOT ENABLE_DEPENDENCIES_GRAPH" OFF
+    )
 cmake_dependent_option(INSTALL_HTML_DOCUMENT "install graph" ON "NOT ENABLE_HTML_DOCUMENT" OFF)
 
 # Set CXX standard
@@ -52,13 +54,13 @@ if(THIS_MULTI_CONFIG)
         string(TOUPPER ${build_type} build_type_upper)
         set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_${build_type_upper}
             ${CMAKE_BINARY_DIR}/${build_type}/lib
-        )
+            )
         set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_${build_type_upper}
             ${CMAKE_BINARY_DIR}/${build_type}/lib
-        )
+            )
         set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_${build_type_upper}
             ${CMAKE_BINARY_DIR}/${build_type}/bin
-        )
+            )
     endforeach()
 
 else()
@@ -101,7 +103,10 @@ endif()
 
 if(ENABLE_SANITIZE_ADDR OR ENABLE_SANITIZE_UNDEF)
     include(Sanitizer)
-    add_sanitizer_flags(${ENABLE_SANITIZE_ADDR} ${ENABLE_SANITIZE_UNDEF} ${ENABLE_SANITIZE_LEAK} ${ENABLE_SANITIZE_THREAD})
+    directory_add_sanitizer(
+        ${ENABLE_SANITIZE_ADDR} ${ENABLE_SANITIZE_UNDEF} ${ENABLE_SANITIZE_LEAK}
+        ${ENABLE_SANITIZE_THREAD}
+        )
 endif()
 
 if(ENABLE_TESTING AND ENABLE_COVERAGE)
@@ -111,6 +116,7 @@ endif()
 
 if(THIS_OS_LINUX)
     set(CMAKE_INSTALL_RPATH ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR})
+    set(CMAKE_BUILD_RPATH ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
 endif(THIS_OS_LINUX)
 
 add_subdirectory(src)
@@ -121,5 +127,3 @@ if(ENABLE_TESTING)
     enable_testing()
     add_subdirectory(test)
 endif(ENABLE_TESTING)
-
-write_register_module_lib()

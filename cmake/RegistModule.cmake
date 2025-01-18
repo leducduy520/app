@@ -1,31 +1,39 @@
-function(REGISTER_MODULE_LIB moduleid)
-    message("Register module library module: ${moduleid}, path: ${moduleid}")
+function(register_module_lib moduleid)
+    if(THIS_OS_WINDOWS)
+        set(DYM_LIB_EXPANSION ".dll")
+    elseif(THIS_OS_LINUX)
+        set(DYM_LIB_EXPANSION ".so")
+    endif()
+
+    message("Register module library module: ${moduleid}, path: ${moduleid}${DYM_LIB_EXPANSION}")
     target_compile_definitions(${moduleid} PUBLIC NAME="${moduleid}")
-    get_property(module_registar GLOBAL PROPERTY LIST_REGISTER_MODULE)
+    get_property(registed_module_list GLOBAL PROPERTY LIST_REGISTED_MODULE)
     set_property(
         GLOBAL
-        PROPERTY LIST_REGISTER_MODULE
-                 "${module_registar} \n\tREGISTER_MODULE_LOCATION(${moduleid}, ${moduleid});"
+        PROPERTY LIST_REGISTED_MODULE
+                 "${registed_module_list} \n\tREGISTER_MODULE_LOCATION(${moduleid}, ${moduleid});"
         )
 
     string(TOUPPER "${moduleid}" moduleid_upper)
-    get_property(module_enum GLOBAL PROPERTY LIST_REGISTER_MODULE_ENUM)
+    get_property(registed_enum_list GLOBAL PROPERTY LIST_REGISTED_MODULE_ENUM)
 
-    if(module_enum)
+    if(registed_enum_list)
         string(PREPEND moduleid_upper ",\n\t")
     else()
         string(PREPEND moduleid_upper "\t")
     endif()
 
-    set_property(GLOBAL PROPERTY LIST_REGISTER_MODULE_ENUM "${module_enum} ${moduleid_upper}")
+    set_property(
+        GLOBAL PROPERTY LIST_REGISTED_MODULE_ENUM "${registed_enum_list} ${moduleid_upper}"
+        )
 endfunction()
 
-function(WRITE_REGISTER_MODULE_LIB)
-    get_property(module_registar GLOBAL PROPERTY LIST_REGISTER_MODULE)
-    get_property(module_enum GLOBAL PROPERTY LIST_REGISTER_MODULE_ENUM)
-    message("LIST_REGISTER_MODULE : ${module_registar}")
-    set(register_lib "${module_registar}")
-    set(register_enum "${module_enum}")
+function(write_registed_module_lib)
+    get_property(registed_module_list GLOBAL PROPERTY LIST_REGISTED_MODULE)
+    get_property(registed_enum_list GLOBAL PROPERTY LIST_REGISTED_MODULE_ENUM)
+    message("LIST_REGISTED_MODULE : ${registed_module_list}")
+    set(register_lib "${registed_module_list}")
+    set(register_enum "${registed_enum_list}")
     configure_file(${PRE_DEFINITION_PATH}.in ${PRE_DEFINITION_PATH})
 endfunction()
 

@@ -20,12 +20,12 @@ function(build_cmake_format_target EXCLUDE_FOLDERS_REGEX)
                 ${CMAKE_SOURCE_DIR}/.cmake-format.yaml
                 -i
                 ${cmake_file}
-            )
+                )
         endforeach()
 
         add_custom_target(
             run_cmake_format COMMAND ${FORMATTING_COMMANDS} WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-        )
+            )
         set_target_properties(run_cmake_format PROPERTIES FOLDER "Custom target")
     else(CMAKE_FORMAT)
         message(WARNING "CMAKE_FORMAT NOT FOUND")
@@ -52,10 +52,10 @@ function(build_clang_format_target EXCLUDE_FOLDERS_REGEX)
         add_custom_target(
             run_clang_format
             COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tools/run-clang-format.py --in-place
-            -j 8 ${CPP_FILES}
+                    -j 8 ${CPP_FILES}
             WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
             USES_TERMINAL
-        )
+            )
         set_target_properties(run_clang_format PROPERTIES FOLDER "Custom target")
     else()
         message(WARNING "CLANGFORMAT NOT FOUND")

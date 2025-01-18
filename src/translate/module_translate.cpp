@@ -172,7 +172,7 @@ void ModuleTranslator::do_detect()
 void ModuleTranslator::do_print_available_language()
 {
     std::cout << "Available languages:\n";
-    std::function impl = [](const std::pair<string_t, string_t> &lang_pair) {
+    std::function impl = [](const std::pair<string_t, string_t>& lang_pair) {
         const string_t sense = lang_pair.first + U(" (") + lang_pair.second + U(")");
         ucout << std::left;
         ucout << std::setw(20) << sense;

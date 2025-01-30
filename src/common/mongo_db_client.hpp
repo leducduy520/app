@@ -25,13 +25,10 @@ namespace dld
         mongocxx::client m_dbclient;
         mongocxx::database m_dbdatabase;
         mongocxx::collection m_dbcollection;
-        static std::unique_ptr<DBClient> m_instance;
-        static std::once_flag m_flag;
 
     public:
         void Connect(std::string db_uri = {}, const std::string& ca_path = {});
         static DBClient* GetInstance();
-        static void DestroyInstance();
         void GetDatabase(const std::string& name);
         void GetCollection(const std::string& name);
         void CreateCollection(const std::string& collectionName);

@@ -5,9 +5,10 @@ file(GLOB HEADER_FILES "${CMAKE_CURRENT_LIST_DIR}/*.hpp" "${CMAKE_CURRENT_LIST_D
 
 add_library(${PROJECT_NAME} SHARED ${SOURCE_FILES})
 
+find_package(OpenSSL REQUIRED)
+find_package(Boost REQUIRED)
 find_package(mongocxx REQUIRED)
 find_package(cpprestsdk REQUIRED)
-find_package(Boost REQUIRED)
 find_package(nlohmann_json REQUIRED)
 target_link_libraries(
     ${PROJECT_NAME}

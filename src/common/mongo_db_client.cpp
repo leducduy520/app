@@ -9,10 +9,6 @@ using mongocxx::v_noabi::result::delete_result;
 using mongocxx::v_noabi::result::insert_one;
 using mongocxx::v_noabi::result::update;
 
-
-std::unique_ptr<dld::DBClient> dld::DBClient::m_instance;
-std::once_flag dld::DBClient::m_flag;
-
 namespace dld
 {
     void DBClient::Connect(std::string db_uri, const std::string& ca_path)
@@ -50,8 +46,8 @@ namespace dld
 
     DBClient* DBClient::GetInstance()
     {
-        std::call_once(m_flag, []() { m_instance = std::make_unique<DBClient>(); });
-        return m_instance.get();
+        static DBClient instance;
+        return &instance;
     }
 
     void DBClient::GetDatabase(const std::string& name)

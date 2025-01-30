@@ -124,7 +124,7 @@ namespace dld
         // Get the actual path of a loaded module
         std::string getModulePath(const std::string& moduleName);
 
-        std::shared_ptr<ModuleInterface> getModuleClass(const std::string& moduleName);
+        std::shared_ptr<ModuleInterface> getModuleInstance(const std::string& moduleName);
 
         static ModuleManager* getInstance();
 
@@ -138,8 +138,6 @@ namespace dld
         friend class ModuleInterface;
 
     private:
-        static std::unique_ptr<ModuleManager> m_instance;
-        static std::once_flag m_flag;
         std::unordered_map<std::string, std::string> m_module_paths;
         std::unordered_map<std::string, LibraryHandle> m_module_handle;
         ModuleFactory<std::string, ModuleInterface> m_factory;

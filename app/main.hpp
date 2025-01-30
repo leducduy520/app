@@ -13,6 +13,7 @@
 #include <unordered_map>
 #include <chrono>
 #include "pre-definition.hpp"
+#include "magic_enum/magic_enum.hpp"
 
 static std::string uid;
 static bsoncxx::types::b_oid ssid;

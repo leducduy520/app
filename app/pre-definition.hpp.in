@@ -1,7 +1,5 @@
 
 #include <cstdint>
-
-#include "magic_enum/magic_enum.hpp"
 #include "module_manager.h"
 
 using namespace dld;
@@ -13,5 +11,6 @@ void init()
 enum class ModuleName : uint8_t
 {
 @register_enum@,
-    REMOVE
+    REMOVE,
+    RELEASE
 };

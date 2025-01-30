@@ -81,7 +81,6 @@ macro(regist_module module_name)
 
     install(
         TARGETS ${module_name}
-        EXPORT ${module_name}_targets
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT Runtime
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT Runtime
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT Development

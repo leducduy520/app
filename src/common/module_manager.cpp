@@ -5,9 +5,6 @@ using namespace std::chrono;
 
 namespace dld
 {
-    std::unique_ptr<ModuleManager> ModuleManager::m_instance = nullptr;
-    std::once_flag ModuleManager::m_flag;
-
     // Register a module with its expected path
     void ModuleManager::registerModule(const std::string& moduleName, const std::string& modulePath)
     {
@@ -132,21 +129,21 @@ namespace dld
 #endif
     }
 
-    std::shared_ptr<ModuleInterface> ModuleManager::getModuleClass(const std::string& moduleName)
+    std::shared_ptr<ModuleInterface> ModuleManager::getModuleInstance(const std::string& moduleName)
     {
         auto pit = m_module_handle.find(moduleName);
-        if (pit != m_module_handle.end())
+        if (pit == m_module_handle.end() && !this->loadModule(moduleName))
         {
-            return m_factory.createModule(moduleName);
+            std::cerr << "Module not loaded: " << moduleName << '\n';
+            return nullptr;
         }
-        std::cerr << "Module not loaded: " << moduleName << '\n';
-        return nullptr;
+        return m_factory.createModule(moduleName);
     }
 
     ModuleManager* ModuleManager::getInstance()
     {
-        std::call_once(m_flag, []() { m_instance = std::make_unique<ModuleManager>(); });
-        return m_instance.get();
+        static ModuleManager instance;
+        return &instance;
     }
 
     void ModuleManager::endSession()

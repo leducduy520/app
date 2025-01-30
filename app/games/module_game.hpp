@@ -8,9 +8,6 @@ using namespace dld;
 
 class ModuleGame : public ModuleInterface
 {
-public:
-private:
-    std::queue<std::future<void>> m_results;
 
 public:
     ModuleGame();

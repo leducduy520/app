@@ -28,5 +28,5 @@ public:
     }
 };
 
-#define REGISTAR_GAME(gameclass, gameId)                                                                               \
-    GameFactory::Instance()->registerGame(#gameId, []() { return new gameclass(); });
+#define REGISTAR_GAME(gameclass, gameId, ...)                                                                          \
+    GameFactory::Instance()->registerGame(#gameId, []() { return new gameclass(__VA_ARGS__); });

@@ -113,7 +113,6 @@ TEST_F(TestCase, APIService)
 {
     using namespace dld::record;
     auto base_url = utility::conversions::to_string_t(dld::get_api_base_uri().value_or("http://localhost:3000"));
-    ucerr << "api base url: " << base_url << '\n';
     {
         const web::http::uri url(base_url + U("/records"));
         web::http::client::http_client client(url);

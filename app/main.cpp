@@ -117,7 +117,7 @@ int main(int argc, char* argv[])
             {
                 if (ModuleManager::getInstance()->loadModule(moduleid))
                 {
-                    mdinterface = ModuleManager::getInstance()->getModuleClass(moduleid);
+                    mdinterface = ModuleManager::getInstance()->getModuleInstance(moduleid);
                     winterface = mdinterface;
                 }
             }
@@ -127,6 +127,13 @@ int main(int argc, char* argv[])
                 std::cout << "Type the name of the module you want to remove: ";
                 std::cin >> moduleid;
                 ModuleManager::getInstance()->releaseModuleInstance(moduleid);
+            }
+            break;
+            case ModuleName::RELEASE:
+            {
+                std::cout << "Type the name of the module you want to release: ";
+                std::cin >> moduleid;
+                ModuleManager::getInstance()->releaseModuleLib(moduleid);
             }
             break;
             default:

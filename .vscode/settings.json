@@ -179,7 +179,7 @@
     "editor.quickSuggestions": {
       "strings": true
     },
-    "editor.defaultFormatter": "josetr.cmake-language-support-vscode",
+    "editor.defaultFormatter": "cheshirekow.cmake-format",
     "editor.formatOnSave": true
   },
   "C_Cpp.codeAnalysis.clangTidy.checks.disabled": [

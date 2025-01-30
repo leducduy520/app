@@ -10,6 +10,7 @@ include(CMakeDependentOption)
 
 option(ENABLE_TESTING "Enable a Unit Testing build." ON)
 option(ENABLE_COVERAGE "Enable a Code Coverage build." OFF)
+option(ENABLE_LTO "Enable a Link-Time Optimization." OFF)
 
 option(ENABLE_DEPENDENCIES_GRAPH "build graph" OFF)
 option(ENABLE_HTML_DOCUMENT "build documentation" OFF)
@@ -43,8 +44,9 @@ set(CMAKE_MESSAGE_LOG_LEVEL VERBOSE)
 set(CMAKE_VERBOSE_MAKEFILE OFF)
 set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 
-# Set custom variables
-set(PRE_DEFINITION_PATH ${CMAKE_SOURCE_DIR}/app/pre-definition.hpp)
+if(ENABLE_LTO)
+    set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
+endif()
 
 # Set output directory for each configuration
 get_property(THIS_MULTI_CONFIG GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
@@ -81,11 +83,15 @@ if(ENABLE_CLANG_FORMAT OR ENABLE_CMAKE_FORMAT)
     include(Tools)
 
     if(ENABLE_CLANG_FORMAT)
-        build_clang_format_target("${CMAKE_SOURCE_DIR}/(build|install|tools|docs|node|.github)/+")
+        build_clang_format_target(
+            "${CMAKE_SOURCE_DIR}/(build|install|tools|docs|node|mongo|.github)/+"
+            )
     endif()
 
     if(ENABLE_CMAKE_FORMAT)
-        build_cmake_format_target("${CMAKE_SOURCE_DIR}/(build|install|tools|docs|node|.github)/+")
+        build_cmake_format_target(
+            "${CMAKE_SOURCE_DIR}/(build|install|tools|docs|node|mongo|.github)/+"
+            )
     endif()
 endif()
 

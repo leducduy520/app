@@ -2,6 +2,7 @@ name: Test build project
 on:
   push:
     branches: ["main"]
+  workflow_dispatch:
 jobs:
   Build-Project:
     runs-on: ubuntu-latest

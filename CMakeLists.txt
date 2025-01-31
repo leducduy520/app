@@ -11,6 +11,7 @@ include(CMakeDependentOption)
 option(ENABLE_TESTING "Enable a Unit Testing build." ON)
 option(ENABLE_COVERAGE "Enable a Code Coverage build." OFF)
 option(ENABLE_LTO "Enable a Link-Time Optimization." OFF)
+option(ENABLE_QT "Enable a QT based application." ON)
 
 option(ENABLE_DEPENDENCIES_GRAPH "build graph" OFF)
 option(ENABLE_HTML_DOCUMENT "build documentation" OFF)
@@ -127,6 +128,9 @@ endif(THIS_OS_LINUX)
 
 add_subdirectory(src)
 add_subdirectory(app)
+if(ENABLE_QT)
+    add_subdirectory(graphical_app)
+endif()
 
 if(ENABLE_TESTING)
     include(CTest)

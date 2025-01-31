@@ -5,16 +5,11 @@
   "dependencies": [
     "boost-config",
     "boost-predef",
-    "cpprestsdk",
     "magic-enum",
     "mongo-cxx-driver",
     "nlohmann-json"
   ],
   "overrides": [
-    {
-      "name": "cpprestsdk",
-      "version": "2.10.17"
-    },
     {
       "name": "mongo-cxx-driver",
       "version": "3.10.2#1"

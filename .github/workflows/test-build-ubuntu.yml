@@ -20,7 +20,7 @@ jobs:
             build-${{ runner.os }}-
             build-
       - name: Configurations
-        run: cmake --preset=linux-rel --fresh
+        run: cmake -DENABLE_QT=OFF --preset=linux-rel --fresh
       - name: Build
         run: cmake --build build --target install
       - name: Do Testing

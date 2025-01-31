@@ -71,7 +71,7 @@ namespace dld
         auto pit = m_module_handle.find(moduleName);
         if (pit != m_module_handle.end())
         {
-            m_factory.releaseModule(moduleName);
+            m_factory.release(moduleName);
             UnloadLibrary(pit->second);
             m_module_handle.erase(pit);
             std::cout << "Released module lib: " << m_module_paths[moduleName] << '\n';
@@ -84,7 +84,7 @@ namespace dld
 
     void ModuleManager::releaseModuleInstance(const std::string& moduleName)
     {
-        this->m_factory.releaseModule(moduleName);
+        this->m_factory.releaseInstance(moduleName);
     }
 
     // Destructor to ensure all modules are released
@@ -137,7 +137,7 @@ namespace dld
             std::cerr << "Module not loaded: " << moduleName << '\n';
             return nullptr;
         }
-        return m_factory.createModule(moduleName);
+        return m_factory.getInstance(moduleName);
     }
 
     ModuleManager* ModuleManager::getInstance()

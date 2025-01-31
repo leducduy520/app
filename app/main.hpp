@@ -43,7 +43,7 @@ inline std::string toModuleId(ModuleName e_moduleName)
 
 void printSystemInfo();
 
-void ask_for_task(std::string& task);
+void ask_for_task();
 
 std::unordered_map<std::string, std::string> parse_arguments(int argc, char* argv[]);
 

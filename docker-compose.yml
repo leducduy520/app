@@ -43,7 +43,7 @@ services:
     ports:
       - "3000:3000"
     environment:
-      MONGODB_URI: mongodb://root:example@database:27017
+      MONGODB_URI: mongodb://database:27017/app
       MONGODB_NAME: app
       MONGODB_COLL: module_app
       MONGODB_CERT: "/etc/tls/client.pem"

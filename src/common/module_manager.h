@@ -55,7 +55,7 @@ namespace dld
         std::unordered_map<key_type, std::shared_ptr<instance_type>> m_module_instance;
 
     public:
-        std::shared_ptr<instance_type> createModule(const key_type& moduleName)
+        std::shared_ptr<instance_type> getInstance(const key_type& moduleName)
         {
             auto fit = m_module_constructor.find(moduleName);
             if (fit != m_module_constructor.end())
@@ -75,7 +75,7 @@ namespace dld
             m_module_constructor[moduleName] = createFunc;
         }
 
-        void releaseModule(const key_type& moduleName)
+        void releaseInstance(const key_type& moduleName)
         {
             auto search = m_module_instance.find(moduleName);
             if (search != m_module_instance.end())
@@ -86,6 +86,21 @@ namespace dld
                 }
                 m_module_instance.erase(search);
             }
+        }
+
+        void releaseConstructor(const key_type& moduleName)
+        {
+            auto search = m_module_constructor.find(moduleName);
+            if (search != m_module_constructor.end())
+            {
+                m_module_constructor.erase(search);
+            }
+        }
+
+        void release(const key_type& moduleName)
+        {
+            releaseInstance(moduleName);
+            releaseConstructor(moduleName);
         }
 
         void release()

@@ -16,6 +16,13 @@ struct MongoData
     std::optional<std::string> db_coll_name;
 };
 
+enum AppTask : uint8_t
+{
+    REMOVE,
+    RELEASE,
+    QUIT
+};
+
 bool parse_mongo_data(MongoData& data, std::unordered_map<std::string, std::string>& options)
 {
     // Check and process the --cert option
@@ -102,14 +109,16 @@ int main(int argc, char* argv[])
     std::string task;
     while (true)
     {
-        ask_for_task(task);
-        auto etask = magic_enum::enum_cast<ModuleName>(task);
-        if (etask.has_value())
+        ask_for_task();
+        std::cin >> task;
+        toupper_str(task);
+        auto emodule = magic_enum::enum_cast<ModuleName>(task);
+        if (emodule.has_value())
         {
             std::shared_ptr<ModuleInterface> mdinterface = nullptr;
             std::weak_ptr<ModuleInterface> winterface;
-            auto moduleid = toModuleId(etask.value());
-            switch (etask.value())
+            auto moduleid = toModuleId(emodule.value());
+            switch (emodule.value())
             {
             case ModuleName::GAMES:
             case ModuleName::CALCULATOR:
@@ -122,20 +131,6 @@ int main(int argc, char* argv[])
                 }
             }
             break;
-            case ModuleName::REMOVE:
-            {
-                std::cout << "Type the name of the module you want to remove: ";
-                std::cin >> moduleid;
-                ModuleManager::getInstance()->releaseModuleInstance(moduleid);
-            }
-            break;
-            case ModuleName::RELEASE:
-            {
-                std::cout << "Type the name of the module you want to release: ";
-                std::cin >> moduleid;
-                ModuleManager::getInstance()->releaseModuleLib(moduleid);
-            }
-            break;
             default:
                 break;
             }
@@ -145,33 +140,58 @@ int main(int argc, char* argv[])
                 minterface->execute();
                 end_module_execution(moduleid);
             }
+            continue;
         }
-        else if (task == "QUIT")
+        auto etask = magic_enum::enum_cast<AppTask>(task);
+        if(etask.has_value())
         {
-            break;
+            switch (etask.value())
+            {
+            case AppTask::REMOVE:
+                std::cout << "Type the name of the module you want to remove: ";
+                std::cin >> task;
+                tolower_str(task);
+                ModuleManager::getInstance()->releaseModuleInstance(task);
+                break;
+            case AppTask::RELEASE:
+                std::cout << "Type the name of the module you want to release: ";
+                std::cin >> task;
+                tolower_str(task);
+                ModuleManager::getInstance()->releaseModuleLib(task);
+                break;
+            case AppTask::QUIT:
+                ModuleManager::getInstance()->endSession();
+                std::cout << "Program finished\n";
+                return 0;
+            default:
+                break;
+            }
         }
         else
         {
             std::cerr << "Invalid task entered\n";
         }
     }
-    ModuleManager::getInstance()->endSession();
-    std::cout << "Program finished\n";
     return 0;
 }
 
-void ask_for_task(std::string& task)
+void ask_for_task()
 {
-    std::cout << "Please enter the task you want to run:\n";
-    std::cout << "Available tasks:\n";
+    std::cout << "Please enter the module's name or task's name you want to run:\n";
+    std::cout << "Available modules:\n";
     for (const auto& value : magic_enum::enum_values<ModuleName>())
     {
         std::string mid{magic_enum::enum_name(value)};
         tolower_str(mid);
         std::cout << "  -  " << mid << '\n';
     }
-    std::cin >> task;
-    toupper_str(task);
+    std::cout << "Available tasks:\n";
+    for (const auto& value : magic_enum::enum_values<AppTask>())
+    {
+        std::string mid{magic_enum::enum_name(value)};
+        tolower_str(mid);
+        std::cout << "  -  " << mid << '\n';
+    }
 }
 
 std::unordered_map<std::string, std::string> parse_arguments(int argc, char* argv[])
@@ -220,9 +240,9 @@ void printout_uids()
         {
             nlohmann::json json_obj = dld::to_njson(line);
             auto uids = json_obj["uids"].get<std::vector<std::string>>();
-            for (auto& uid : uids)
+            for (auto& id : uids)
             {
-                std::cout << "\t- " << uid << "\n";
+                std::cout << "\t- " << id << "\n";
             }
             std::cout << '\n';
 #ifndef NDEBUG

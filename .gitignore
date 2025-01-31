@@ -1,15 +1,13 @@
 .vs
 .git
+*.pem*
 
 build/
 install/
 node/node_modules/
 docs/graph/
 docs/html/
-certs/
-mongo/data
-mongo/log
-mongo/tls
+mongo
 
 app/pre-definition.hpp
 X509*

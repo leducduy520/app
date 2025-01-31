@@ -11,17 +11,16 @@ function detectAuthMethod(mongoUri) {
   try {
     const uri = new URL(mongoUri);
 
-    // Check if an authentication mechanism is explicitly specified
-    const authMechanism = uri.searchParams.get("authMechanism");
-    if (authMechanism === "MONGODB-X509") {
-      return AuthMethods.X509;
-    }
-
     // Check if username and password are included in the URI
     const username = uri.username;
     const password = uri.password;
     if (username && password) {
       return AuthMethods.PASSWORD;
+    }
+
+    // Check if an authentication mechanism is explicitly specified
+    if (process.env.MONGODB_CA || process.env.MONGODB_CERT) {
+      return AuthMethods.X509;
     }
 
     // Fallback for other cases

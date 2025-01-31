@@ -10,7 +10,5 @@ void init()
 
 enum class ModuleName : uint8_t
 {
-@register_enum@,
-    REMOVE,
-    RELEASE
+@register_enum@
 };

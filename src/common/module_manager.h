@@ -10,6 +10,7 @@
 #include <future>
 #include <type_traits>
 #include <optional>
+#include <atomic>
 
 #ifdef _WIN32
 #include <Windows.h>
@@ -38,6 +39,7 @@ namespace dld
     {
     protected:
         const std::string m_moduleName;
+        std::atomic<bool> m_running;
 
     public:
         ModuleInterface(std::string moduleName);

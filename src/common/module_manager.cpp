@@ -152,7 +152,7 @@ namespace dld
     }
 
     ModuleInterface::ModuleInterface(std::string modulename)
-        : m_moduleName(std::move(modulename)){INDEBUG(std::cout << "Module " << m_moduleName << '\n')}
+        : m_moduleName(std::move(modulename)), m_running(false){INDEBUG(std::cout << "Module " << m_moduleName << '\n')}
 
           ModuleInterface::~ModuleInterface()
     {

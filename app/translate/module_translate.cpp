@@ -3,6 +3,7 @@
 #include "module_translate.hpp"
 #include "thread_pool.hpp"
 #include "utilities.hpp"
+#include <condition_variable>
 #include <cstdlib>
 #include <locale>
 #include <codecvt>
@@ -46,6 +47,10 @@ string_t cast_wstring_2(const char* cstr)
 #endif
 }
 
+static std::atomic_bool finished = false;
+static std::condition_variable cv;
+static std::mutex mt;
+
 ModuleTranslator::ModuleTranslator() : ModuleInterface(NAME)
 {}
 
@@ -65,7 +70,8 @@ void ModuleTranslator::execute()
 
     this->get_language_list();
 
-    while (true)
+    m_running.store(true);
+    while (m_running.load())
     {
         string_t task{};
         ucout << "Enter a task you want me to execute: :\n"
@@ -74,6 +80,10 @@ void ModuleTranslator::execute()
               << "\t- detect: detect a input language\n"
               << "\t- exit: quit the program\n";
         ucin >> task;
+        if (!m_running.load())
+        {
+            break;
+        }
         if (task == U("translate"))
         {
             this->do_translate();
@@ -91,11 +101,20 @@ void ModuleTranslator::execute()
             break;
         }
     }
+    m_running.store(false);
+    finished.store(true);
+    cv.notify_one();
 }
 
 void ModuleTranslator::shutdown()
 {
-    std::cout << m_moduleName << " translation finished\n";
+    m_running.store(false);
+    if(!finished.load())
+    {
+        std::unique_lock lock(mt);
+        cv.wait(lock);
+    }
+    std::cout << m_moduleName << " shutdown\n";
 }
 
 void ModuleTranslator::get_language_list()

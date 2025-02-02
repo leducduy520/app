@@ -109,7 +109,9 @@
     "csetjmp": "cpp",
     "rope": "cpp",
     "*.ipp": "cpp",
-    "execution": "cpp"
+    "execution": "cpp",
+    "*.moc": "cpp",
+    "qapplication": "cpp"
   },
   "C_Cpp_Runner.cCompilerPath": "gcc",
   "C_Cpp_Runner.cppCompilerPath": "g++",
